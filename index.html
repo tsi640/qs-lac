@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LAC QS">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d0d0f" media="(prefers-color-scheme: dark)">
+	<link rel="apple-touch-icon" href="apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="apple-touch-icon.png">
+  <title>LAC Fassaden-QS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f5f7;
+      --surface: rgba(255,255,255,.86);
+      --surface-solid: #ffffff;
+      --surface-2: #ececf1;
+      --text: #161617;
+      --muted: #6e6e73;
+      --border: rgba(60,60,67,.18);
+      --border-strong: rgba(30,30,34,.55);
+      --blue: #0a84ff;
+      --green: #34c759;
+      --yellow: #ff9f0a;
+      --red: #ff3b30;
+      --purple: #af52de;
+      --cyan: #32ade6;
+      --shadow: 0 8px 28px rgba(0,0,0,.10);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --cell-h: 82px;
+      --zoom: 1;
+      --format-a: #d4e7f8;
+      --format-b: #bfecc8;
+      --format-c: #cdeedb;
+      --format-ra: #9fc5e8;
+      --format-rb: #e7a4cb;
+      --format-rc: #f5cfb9;
+      --format-rd: #c4b5e6;
+      --format-re: #e8b2dc;
+      --format-t: #ffdc94;
+      --format-model: #f5f5f3;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d0d0f;
+        --surface: rgba(29,29,32,.88);
+        --surface-solid: #1c1c1e;
+        --surface-2: #2c2c2e;
+        --text: #f5f5f7;
+        --muted: #a1a1a6;
+        --border: rgba(235,235,245,.16);
+        --border-strong: rgba(245,245,247,.55);
+        --shadow: 0 10px 30px rgba(0,0,0,.35);
+        --format-a: #27435a;
+        --format-b: #245033;
+        --format-c: #285140;
+        --format-ra: #2d5a7f;
+        --format-rb: #70415d;
+        --format-rc: #725242;
+        --format-rd: #554772;
+        --format-re: #704f69;
+        --format-t: #705928;
+        --format-model: #29292c;
+      }
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin:0; min-height:100%; background:var(--bg); color:var(--text); }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+      overscroll-behavior-y: none;
+    }
+    input, textarea, select, code, .selectable { user-select:text; -webkit-user-select:text; }
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
+      outline-offset: 2px;
+    }
+    .hidden { display:none !important; }
+    .app { min-height:100vh; padding-top:var(--safe-top); padding-bottom:calc(78px + var(--safe-bottom)); }
+    .topbar {
+      position: sticky; top:0; z-index:40;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 14px;
+      background:color-mix(in srgb, var(--surface-solid) 82%, transparent);
+      border-bottom:1px solid var(--border);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+    .brand { min-width:0; display:flex; align-items:center; gap:10px; }
+    .brand-icon { width:38px; height:38px; display:grid; place-items:center; border-radius:12px; background:var(--text); color:var(--bg); }
+    .brand-title { font-size:17px; font-weight:750; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .brand-sub { font-size:12px; color:var(--muted); margin-top:1px; }
+    .top-actions { display:flex; align-items:center; gap:8px; }
+    .role-badge { font-size:12px; padding:6px 9px; border-radius:999px; background:var(--surface-2); font-weight:650; }
+    .icon-btn { width:40px; height:40px; border:0; border-radius:12px; background:var(--surface-2); display:grid; place-items:center; cursor:pointer; }
+    .content { width:min(1120px, 100%); margin:0 auto; padding:16px 14px 28px; }
+    .page-title { font-size:28px; line-height:1.08; letter-spacing:-.04em; font-weight:790; margin:4px 0 4px; }
+    .page-sub { color:var(--muted); font-size:14px; margin:0 0 16px; }
+    .status-line { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); margin:0 0 12px; }
+    .dot { width:8px; height:8px; border-radius:50%; background:var(--green); flex:0 0 auto; }
+    .dot.offline { background:var(--red); }
+    .card {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:0 1px 0 rgba(255,255,255,.25) inset;
+    }
+    .stats { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+    .stat { padding:14px; min-width:0; }
+    .stat-value { font-size:26px; line-height:1; font-weight:790; letter-spacing:-.04em; }
+    .stat-label { color:var(--muted); font-size:12px; margin-top:7px; line-height:1.25; }
+    .progress-track { height:7px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-top:10px; }
+    .progress-bar { height:100%; border-radius:inherit; background:var(--green); width:0%; transition:width .25s ease; }
+    .section-title { font-size:17px; font-weight:740; letter-spacing:-.02em; margin:20px 0 10px; }
+    .facade-list { display:grid; grid-template-columns:1fr; gap:10px; }
+    .facade-card { width:100%; border:1px solid var(--border); background:var(--surface); border-radius:17px; padding:13px 14px; text-align:left; cursor:pointer; }
+    .facade-card-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .facade-name { font-size:15px; font-weight:720; }
+    .facade-meta { color:var(--muted); font-size:12px; margin-top:4px; }
+    .facade-pct { font-size:19px; font-weight:780; }
+    .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:10px 0 12px; }
+    .select, .text-input, .textarea {
+      border:1px solid var(--border); background:var(--surface-solid); color:var(--text); border-radius:12px;
+      min-height:44px; padding:10px 12px; font-size:16px;
+    }
+    .select { max-width:100%; }
+    .btn { border:0; min-height:44px; padding:10px 14px; border-radius:12px; background:var(--surface-2); font-weight:680; cursor:pointer; }
+    .btn.primary { background:var(--blue); color:#fff; }
+    .btn.green { background:var(--green); color:#fff; }
+    .btn.red { background:var(--red); color:#fff; }
+    .btn.ghost { background:transparent; border:1px solid var(--border); }
+    .btn.small { min-height:36px; padding:7px 10px; font-size:13px; }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    .segmented { display:flex; gap:4px; padding:4px; background:var(--surface-2); border-radius:13px; overflow:auto; }
+    .segmented button { border:0; min-height:36px; padding:7px 10px; border-radius:9px; background:transparent; white-space:nowrap; font-size:13px; cursor:pointer; }
+    .segmented button.active { background:var(--surface-solid); box-shadow:0 1px 3px rgba(0,0,0,.12); font-weight:700; }
+    .facade-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .facade-head h2 { margin:0; font-size:22px; letter-spacing:-.03em; }
+    .facade-head p { margin:3px 0 0; color:var(--muted); font-size:13px; }
+    .legend { display:flex; flex-wrap:wrap; gap:7px 10px; margin:9px 0 10px; }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); }
+    .legend-swatch { width:14px; height:14px; border-radius:4px; border:1px solid rgba(0,0,0,.22); }
+    .facade-shell { position:relative; border:1px solid var(--border); border-radius:16px; background:var(--surface-solid); overflow:hidden; }
+    .facade-scroll { overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; padding:12px 10px 14px; }
+    .facade-grid { display:grid; grid-auto-rows:calc(var(--cell-h) * var(--zoom)); width:max-content; min-width:100%; border-collapse:collapse; align-items:stretch; }
+    .floor-label {
+      position:sticky; left:0; z-index:8;
+      display:flex; align-items:center; justify-content:center; text-align:center;
+      background:color-mix(in srgb, var(--surface-solid) 94%, transparent);
+      border-right:3px solid var(--border-strong); border-bottom:1px solid var(--border);
+      font-size:15px; font-weight:820; letter-spacing:-.03em; padding:4px;
+      box-shadow:8px 0 12px -12px rgba(0,0,0,.55);
+    }
+    .field-cell {
+      position:relative; border:0; border-right:1px solid var(--border-strong); border-bottom:1px solid var(--border-strong);
+      padding:0; min-width:0; overflow:hidden; cursor:pointer; color:#101013;
+      background:var(--cell-bg); transform:translateZ(0);
+    }
+    @media (prefers-color-scheme: dark) { .field-cell { color:#f6f6f7; } }
+    .field-cell:first-of-type { border-left:1px solid var(--border-strong); }
+    .field-cell.model {
+      background:
+        linear-gradient(34deg, transparent 48.5%, color-mix(in srgb, var(--muted) 45%, transparent) 49%, color-mix(in srgb, var(--muted) 45%, transparent) 51%, transparent 51.5%),
+        linear-gradient(-34deg, transparent 48.5%, color-mix(in srgb, var(--muted) 45%, transparent) 49%, color-mix(in srgb, var(--muted) 45%, transparent) 51%, transparent 51.5%),
+        var(--format-model);
+    }
+    .field-cell.void { background:transparent; cursor:default; border-color:transparent; }
+    .field-cell.void::before, .field-cell.void::after { content:""; position:absolute; left:8%; right:8%; top:50%; height:1px; background:var(--border); transform:rotate(24deg); }
+    .field-cell.void::after { transform:rotate(-24deg); }
+    .field-inner { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start; padding:5px 4px; }
+    .field-code { font-size:11px; font-weight:820; line-height:1; }
+    .field-dim { font-size:8px; line-height:1.15; margin-top:2px; opacity:.76; white-space:nowrap; }
+    .field-label { font-size:8px; line-height:1.1; margin-top:2px; opacity:.76; white-space:nowrap; }
+    .field-cell.narrow .field-label { display:none; }
+    .field-cell.narrow .field-dim { font-size:7px; writing-mode:vertical-rl; transform:rotate(180deg); position:absolute; left:3px; bottom:4px; }
+    .field-cell.narrow .field-code { position:absolute; top:5px; left:4px; }
+    .field-cell.door-zone-left { border-left:4px solid #111 !important; }
+    .field-cell.door-zone-right { border-right:4px solid #111 !important; }
+    @media (prefers-color-scheme: dark) {
+      .field-cell.door-zone-left { border-left-color:#fff !important; }
+      .field-cell.door-zone-right { border-right-color:#fff !important; }
+    }
+    .completion-badge {
+      position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%;
+      display:grid; place-items:center; background:var(--green); color:white; font-size:11px; border:2px solid rgba(255,255,255,.92); box-shadow:0 1px 4px rgba(0,0,0,.2);
+    }
+    .field-cell.completed { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--green) 78%, transparent); }
+    .field-cell.not-completed { filter:saturate(.82); }
+    .qs-badge { position:absolute; top:4px; left:4px; min-width:20px; height:20px; border-radius:6px; display:grid; place-items:center; color:white; font-size:10px; border:1.5px solid rgba(255,255,255,.9); box-shadow:0 1px 3px rgba(0,0,0,.18); }
+    .qs-ok { background:var(--green); }
+    .qs-note { background:var(--yellow); }
+    .qs-defect { background:var(--red); }
+    .qs-recheck { background:var(--blue); }
+    .defect-marker { position:absolute; right:5px; bottom:5px; width:11px; height:11px; border-radius:50%; background:var(--red); border:2px solid white; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+    .floor-band { position:absolute; inset:0; pointer-events:none; }
+    .zoom-control { display:flex; align-items:center; gap:6px; }
+    .zoom-value { min-width:42px; text-align:center; font-size:12px; color:var(--muted); }
+    .empty { padding:28px 18px; text-align:center; color:var(--muted); }
+    .bottom-nav {
+      position:fixed; left:0; right:0; bottom:0; z-index:50;
+      display:grid; grid-template-columns:repeat(3,1fr); gap:0;
+      padding:6px 8px calc(6px + var(--safe-bottom));
+      background:color-mix(in srgb, var(--surface-solid) 88%, transparent);
+      border-top:1px solid var(--border); backdrop-filter:blur(22px) saturate(180%); -webkit-backdrop-filter:blur(22px) saturate(180%);
+    }
+    .bottom-nav.two { grid-template-columns:repeat(2,1fr); }
+    .nav-btn { border:0; background:transparent; color:var(--muted); min-height:54px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:10px; cursor:pointer; }
+    .nav-btn i { font-size:19px; }
+    .nav-btn.active { color:var(--blue); font-weight:700; }
+    .sheet-backdrop { position:fixed; inset:0; z-index:90; background:rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:opacity .2s ease; }
+    .sheet-backdrop.open { opacity:1; pointer-events:auto; }
+    .sheet {
+      position:fixed; z-index:91; left:0; right:0; bottom:0; max-height:min(82vh, 760px); overflow:auto;
+      transform:translateY(105%); transition:transform .24s ease;
+      background:var(--surface-solid); border-radius:22px 22px 0 0; box-shadow:var(--shadow);
+      padding:8px 14px calc(18px + var(--safe-bottom));
+    }
+    .sheet.open { transform:translateY(0); }
+    .sheet-handle { width:38px; height:5px; border-radius:999px; background:var(--border-strong); opacity:.35; margin:3px auto 10px; }
+    .sheet-title { font-size:20px; font-weight:780; letter-spacing:-.03em; margin:0; }
+    .sheet-sub { color:var(--muted); font-size:13px; margin:3px 0 14px; }
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0 14px; }
+    .detail { background:var(--surface-2); border-radius:13px; padding:10px; }
+    .detail-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+    .detail-value { font-size:14px; font-weight:680; margin-top:3px; line-height:1.25; }
+    .form-group { margin:14px 0; }
+    .form-label { display:block; font-size:12px; font-weight:700; margin:0 0 6px; }
+    .textarea { width:100%; min-height:92px; resize:vertical; }
+    .status-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; }
+    .status-btn { border:1px solid var(--border); background:var(--surface-2); min-height:44px; border-radius:12px; padding:8px 9px; font-size:12px; font-weight:660; cursor:pointer; }
+    .status-btn.active { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); }
+    .defect-list { display:flex; flex-direction:column; gap:10px; }
+    .defect-card { border:1px solid var(--border); background:var(--surface); border-radius:16px; padding:12px; }
+    .defect-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+    .defect-id { font-size:12px; font-weight:780; color:var(--red); }
+    .defect-title { font-size:14px; font-weight:720; margin-top:2px; }
+    .defect-text { font-size:13px; line-height:1.35; margin:8px 0 0; white-space:pre-wrap; user-select:text; -webkit-user-select:text; }
+    .defect-meta { color:var(--muted); font-size:11px; margin-top:8px; }
+    .pill { display:inline-flex; align-items:center; gap:5px; border-radius:999px; padding:5px 8px; font-size:11px; font-weight:700; background:var(--surface-2); }
+    .pill.open { color:var(--red); }
+    .pill.closed { color:var(--green); }
+    .login-wrap { min-height:100vh; padding:calc(28px + var(--safe-top)) 18px calc(28px + var(--safe-bottom)); display:flex; align-items:center; justify-content:center; }
+    .login-card { width:min(430px,100%); background:var(--surface-solid); border:1px solid var(--border); border-radius:24px; box-shadow:var(--shadow); padding:20px; }
+    .login-mark { width:54px; height:54px; border-radius:17px; display:grid; place-items:center; background:var(--text); color:var(--bg); font-size:24px; margin-bottom:16px; }
+    .login-title { margin:0; font-size:28px; letter-spacing:-.04em; }
+    .login-sub { color:var(--muted); font-size:14px; line-height:1.4; margin:7px 0 18px; }
+    .account-switch { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+    .account-btn { border:1px solid var(--border); background:var(--surface-2); border-radius:14px; min-height:58px; padding:9px; font-size:13px; font-weight:720; cursor:pointer; }
+    .account-btn.active { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); background:color-mix(in srgb, var(--blue) 10%, var(--surface-solid)); }
+    .login-card .text-input { width:100%; }
+    .login-error { min-height:18px; margin:8px 0 0; color:var(--red); font-size:12px; }
+    .setup-panel { margin-top:16px; border-top:1px solid var(--border); padding-top:14px; }
+    details summary { cursor:pointer; color:var(--blue); font-size:13px; font-weight:680; }
+    .setup-copy { width:100%; min-height:180px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; line-height:1.35; margin-top:10px; }
+    .setup-steps { color:var(--muted); font-size:12px; line-height:1.45; }
+    .toast { position:fixed; z-index:120; left:50%; bottom:calc(88px + var(--safe-bottom)); transform:translate(-50%,20px); opacity:0; pointer-events:none; background:#111; color:#fff; border-radius:999px; padding:10px 14px; font-size:12px; font-weight:650; transition:.2s ease; white-space:nowrap; max-width:90vw; overflow:hidden; text-overflow:ellipsis; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .banner { border-radius:14px; padding:10px 12px; margin-bottom:12px; font-size:12px; line-height:1.35; }
+    .banner.warn { background:color-mix(in srgb, var(--yellow) 17%, var(--surface-solid)); border:1px solid color-mix(in srgb, var(--yellow) 45%, var(--border)); }
+    .banner.error { background:color-mix(in srgb, var(--red) 12%, var(--surface-solid)); border:1px solid color-mix(in srgb, var(--red) 40%, var(--border)); }
+    @media (min-width:700px) {
+      .stats { grid-template-columns:repeat(4,minmax(0,1fr)); }
+      .facade-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .content { padding-left:20px; padding-right:20px; }
+      .bottom-nav { left:50%; right:auto; transform:translateX(-50%); width:520px; border:1px solid var(--border); border-bottom:0; border-radius:18px 18px 0 0; }
+      .sheet { left:50%; right:auto; width:min(620px,100%); transform:translate(-50%,105%); }
+      .sheet.open { transform:translate(-50%,0); }
+    }
+    @media (max-width:380px) {
+      :root { --cell-h:76px; }
+      .page-title { font-size:25px; }
+      .stats { gap:8px; }
+      .stat { padding:12px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loginView" class="login-wrap">
+    <div class="login-card">
+      <div class="login-mark"><i class="fa-solid fa-building"></i></div>
+      <h1 class="login-title">LAC Fassaden-QS</h1>
+      <p class="login-sub">Gemeinsamer Baufortschritt für Glasbau Pritz und getrennte QS-/Mängelverwaltung für SGS.</p>
+
+      <div class="account-switch" aria-label="Account auswählen">
+        <button type="button" class="account-btn active" data-account="SGS-QS"><i class="fa-solid fa-clipboard-check"></i><br>SGS-QS</button>
+        <button type="button" class="account-btn" data-account="Pritz"><i class="fa-solid fa-screwdriver-wrench"></i><br>Pritz</button>
+      </div>
+
+      <label class="form-label" for="passwordInput">Passwort</label>
+      <input id="passwordInput" class="text-input" type="password" autocomplete="current-password" placeholder="Passwort eingeben">
+      <button id="loginBtn" type="button" class="btn primary" style="width:100%;margin-top:10px">Anmelden</button>
+      <div id="loginError" class="login-error" role="alert"></div>
+
+      <div class="setup-panel">
+        <details id="setupDetails">
+          <summary>Ersteinrichtung Supabase</summary>
+          <div class="setup-steps">
+            <p><strong>1.</strong> Den SQL-Block unten einmal im Supabase SQL Editor ausführen.</p>
+            <p><strong>2.</strong> Unter <em>Authentication → Users</em> zwei Benutzer anlegen und „Auto Confirm“ aktivieren:<br>
+              <span class="selectable">sgs-qs@lac-app.example</span> und <span class="selectable">pritz@lac-app.example</span>.<br>
+              Verwende dort die von dir festgelegten Passwörter. Die Passwörter stehen absichtlich <strong>nicht</strong> im öffentlichen HTML.</p>
+            <p><strong>3.</strong> Danach einmal als <strong>SGS-QS</strong> anmelden. Die Fassadenstruktur wird automatisch eingespielt.</p>
+          </div>
+          <textarea id="setupSql" class="textarea setup-copy" readonly></textarea>
+          <button id="copySqlBtn" type="button" class="btn ghost" style="width:100%;margin-top:8px">SQL kopieren</button>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div id="appView" class="app hidden">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-building"></i></div>
+        <div style="min-width:0">
+          <div class="brand-title">LAC Fassaden-QS</div>
+          <div id="headerSub" class="brand-sub">Projekt 1710</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span id="roleBadge" class="role-badge"></span>
+        <button id="refreshBtn" type="button" class="icon-btn" aria-label="Aktualisieren"><i class="fa-solid fa-rotate"></i></button>
+        <button id="logoutBtn" type="button" class="icon-btn" aria-label="Abmelden"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div id="networkLine" class="status-line"><span class="dot"></span><span>Mit Supabase verbunden</span></div>
+      <div id="globalBanner"></div>
+
+      <section id="pageOverview" class="page-section"></section>
+      <section id="pageFacades" class="page-section hidden"></section>
+      <section id="pageDefects" class="page-section hidden"></section>
+    </main>
+
+    <nav id="bottomNav" class="bottom-nav">
+      <button type="button" class="nav-btn active" data-page="overview"><i class="fa-solid fa-chart-pie"></i><span>Übersicht</span></button>
+      <button type="button" class="nav-btn" data-page="facades"><i class="fa-solid fa-table-cells-large"></i><span>Fassaden</span></button>
+      <button type="button" id="defectsNavBtn" class="nav-btn" data-page="defects"><i class="fa-solid fa-triangle-exclamation"></i><span>Mängel</span></button>
+    </nav>
+  </div>
+
+  <div id="sheetBackdrop" class="sheet-backdrop"></div>
+  <section id="fieldSheet" class="sheet" aria-modal="true" aria-labelledby="sheetTitle"></section>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm';
+
+    const SUPABASE_URL = 'https://onlqxrunmyfiizvfvhtp.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_B8gr5dcQ9yMzIO94ZydyYg_ufXzqZn0';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+
+    const ACCOUNT_EMAIL = {
+      'SGS-QS': 'sgs-qs@lac-app.example',
+      'Pritz': 'pritz@lac-app.example'
+    };
+
+    const FORMAT = {
+      A:  { name:'Regelformat A', short:'A', width:1770, css:'var(--format-a)' },
+      B:  { name:'Regelformat B', short:'B', width:1869, css:'var(--format-b)' },
+      C:  { name:'Regelformat C', short:'C', width:1321, css:'var(--format-c)' },
+      RA: { name:'Randformat A', short:'RA', width:639, css:'var(--format-ra)' },
+      RB: { name:'Randformat B', short:'RB', width:1436, css:'var(--format-rb)' },
+      RC: { name:'Randformat C', short:'RC', width:2045, css:'var(--format-rc)' },
+      RD: { name:'Randformat D', short:'RD', width:1266, css:'var(--format-rd)' },
+      RE: { name:'Randformat E', short:'RE', width:1311, css:'var(--format-re)' },
+      T:  { name:'Türelement', short:'T', width:1078, css:'var(--format-t)' },
+      M:  { name:'Modellverglasung', short:'M', width:null, css:'var(--format-model)' },
+      V:  { name:'Platzhalter', short:'', width:null, css:'transparent' }
+    };
+
+    const floorSlug = s => s.replaceAll(' ', '').replaceAll('.', '').replaceAll('/', '-').toUpperCase();
+    const repeat = (value, n) => Array.from({length:n}, () => value);
+    const row = (floor, codes) => ({ floor, codes });
+
+    function makeFront(id, finger, rows, widths, sourceGroup='Stirnseite') {
+      return { id, finger, title:`Finger ${finger} – Stirnseite`, group:sourceGroup, type:'front', rows, widths, doorColumns:[5,6] };
+    }
+
+    const frontWidthsA = [1436,1869,1869,1770,1078,1078,1770,1869,1869,639];
+    const frontWidthsStd = [639,1869,1869,1770,1078,1078,1770,1869,1869,639];
+    const frontWidths9 = [639,1869,1869,1770,1078,1078,1770,1869,1869,1436];
+    const frontWidths10 = [1436,1869,1869,1770,1078,1078,1770,1869,1869,639];
+
+    const FACADE_DEFS = [
+      makeFront('F01_S','1',[
+        row('5. OG',['V','V','M','M','M','M','M','M','M','V']),
+        row('4. OG',['M','M','B','A','T','T','A','B','B','RA']),
+        row('3. OG',['RB','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RB','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RB','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RB','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidthsA),
+      makeFront('F02_S','2',[
+        row('5. OG',repeat('M',10)),
+        row('4. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('3. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RA','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidthsStd),
+      makeFront('F03_S','3',[
+        row('5. OG',repeat('M',10)),
+        row('4. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('3. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RA','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidthsStd),
+      makeFront('F04_S','4',[
+        row('5. OG',['V','V','M','M','M','M','V','V','V','V']),
+        row('4. OG',['M','M','A','T','T','A','M','M','M','RA']),
+        row('3. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RA','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidthsStd),
+      makeFront('F05_S','5',[
+        row('5. OG',['V','M','M','M','M','M','M','V','V','V']),
+        row('4. OG',['M','B','A','T','T','A','B','M','M','RA']),
+        row('3. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RA','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidthsStd),
+      makeFront('F06_S','6',[
+        row('5. OG',['M','M','M','M','M','M','M','V','V','V']),
+        row('4. OG',['RA','B','B','A','T','T','A','M','M','RA']),
+        row('3. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RA','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidthsStd),
+      makeFront('F07_S','7',[
+        row('5. OG',repeat('M',10)),
+        row('4. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('3. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RA','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidthsStd),
+      makeFront('F08_S','8',[
+        row('5. OG',repeat('M',10)),
+        row('4. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('3. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RA','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RA','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidthsStd),
+      makeFront('F09_S','9',[
+        row('5. OG',repeat('M',10)),
+        row('4. OG',['RA','B','B','A','T','T','A','B','B','RB']),
+        row('3. OG',['RA','B','B','A','T','T','A','B','B','RB']),
+        row('2. OG',['RA','B','B','A','T','T','A','B','B','RB']),
+        row('1. OG',['RA','B','B','A','T','T','A','B','B','RB']),
+        row('EG',   ['RA','B','B','A','T','T','A','C','C','RB'])
+      ], frontWidths9),
+      makeFront('F10_S','10',[
+        row('5. OG',repeat('M',10)),
+        row('4. OG',['RB','B','B','A','T','T','A','B','B','RA']),
+        row('3. OG',['RB','B','B','A','T','T','A','B','B','RA']),
+        row('2. OG',['RB','B','B','A','T','T','A','B','B','RA']),
+        row('1. OG',['RB','B','B','A','T','T','A','B','B','RA']),
+        row('EG',   ['RB','B','B','A','T','T','A','C','C','RA'])
+      ], frontWidths10),
+      {
+        id:'F01_L', finger:'1', title:'Finger 1 – lange Seite', group:'Längsseite', type:'long', doorColumns:[],
+        widths:[1311,...repeat(1321,28),2045],
+        rows:[
+          row('5. OG',['RE',...repeat('C',7),...repeat('M',18),...repeat('V',4)]),
+          row('4. OG',['RE',...repeat('C',25),...repeat('M',4)]),
+          row('3. OG',['RE',...repeat('C',28),'RC']),
+          row('2. OG',['RE',...repeat('C',28),'RC']),
+          row('1. OG',['RE',...repeat('C',28),'RC']),
+          row('EG',   ['RE',...repeat('C',28),'RD'])
+        ]
+      },
+      {
+        id:'F09_L', finger:'9', title:'Finger 9 – lange Seite', group:'Längsseite', type:'long', doorColumns:[],
+        widths:[2045,...repeat(1321,28),1266],
+        rows:[
+          row('7. OG',[...repeat('V',8),...repeat('M',21),'V']),
+          row('6. OG',[...repeat('M',8),...repeat('C',21),'RD']),
+          row('5. OG',['RC',...repeat('C',28),'RD']),
+          row('4. OG',['RC',...repeat('C',28),'RD']),
+          row('3. OG',['RC',...repeat('C',28),'RD']),
+          row('2. OG',['RC',...repeat('C',28),'RD']),
+          row('1. OG',['RC',...repeat('C',8),...repeat('V',6),...repeat('C',14),'RD']),
+          row('EG',   ['RC',...repeat('C',8),...repeat('V',6),...repeat('C',14),'RD'])
+        ]
+      },
+      {
+        id:'F10_L', finger:'10', title:'Finger 10 – lange Seite', group:'Längsseite', type:'long', doorColumns:[],
+        widths:[1311,...repeat(1321,28),2045],
+        rows:[
+          row('7. OG',[...repeat('M',22),...repeat('V',8)]),
+          row('6. OG',['RE',...repeat('C',21),...repeat('M',8)]),
+          row('5. OG',['RE',...repeat('C',28),'RC']),
+          row('4. OG',['RE',...repeat('C',28),'RC']),
+          row('3. OG',['RE',...repeat('C',28),'RC']),
+          row('2. OG',['RE',...repeat('C',28),'RC']),
+          row('1. OG',['RE',...repeat('C',28),'RC']),
+          row('EG',   ['RE',...repeat('C',28),'RD'])
+        ]
+      }
+    ];
+
+    const FACADE_MAP = Object.fromEntries(FACADE_DEFS.map(f => [f.id,f]));
+
+    function buildSeedFields() {
+      const fields = [];
+      FACADE_DEFS.forEach((facade, facadeOrder) => {
+        facade.rows.forEach((r, rowIndex) => {
+          r.codes.forEach((code, colIndex) => {
+            const baseWidth = facade.widths[colIndex] || FORMAT[code]?.width || 1321;
+            const fmt = FORMAT[code] || FORMAT.V;
+            fields.push({
+              id: `${facade.id}_${floorSlug(r.floor)}_C${String(colIndex+1).padStart(2,'0')}`,
+              facade_id: facade.id,
+              floor: r.floor,
+              floor_order: rowIndex,
+              col_no: colIndex + 1,
+              format_code: code,
+              width_mm: baseWidth,
+              is_void: code === 'V',
+              is_model: code === 'M',
+              sort_order: facadeOrder * 10000 + rowIndex * 100 + colIndex
+            });
+          });
+        });
+      });
+      return fields;
+    }
+    const SEED_FIELDS = buildSeedFields();
+    const FIELD_MAP = Object.fromEntries(SEED_FIELDS.map(f => [f.id,f]));
+
+    const SETUP_SQL = `-- LAC Fassaden-QS – einmalig im Supabase SQL Editor ausführen
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  display_name text not null,
+  role text not null check (role in ('qs','pritz')),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.facades (
+  id text primary key,
+  finger text not null,
+  title text not null,
+  group_name text not null,
+  sort_order integer not null default 0
+);
+
+create table if not exists public.fields (
+  id text primary key,
+  facade_id text not null references public.facades(id) on delete cascade,
+  floor text not null,
+  floor_order integer not null,
+  col_no integer not null,
+  format_code text not null,
+  width_mm integer,
+  is_void boolean not null default false,
+  is_model boolean not null default false,
+  sort_order integer not null default 0
+);
+
+create table if not exists public.progress (
+  field_id text primary key references public.fields(id) on delete cascade,
+  completed boolean not null default false,
+  completed_at timestamptz,
+  completed_by uuid references auth.users(id),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.qs_records (
+  field_id text primary key references public.fields(id) on delete cascade,
+  status text not null default 'unchecked' check (status in ('unchecked','ok','note','defect','recheck')),
+  note text not null default '',
+  checked_at timestamptz,
+  checked_by uuid references auth.users(id),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.defects (
+  id bigint generated by default as identity primary key,
+  field_id text not null references public.fields(id) on delete cascade,
+  status text not null default 'open' check (status in ('open','closed')),
+  description text not null,
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users(id),
+  closed_at timestamptz,
+  closed_by uuid references auth.users(id)
+);
+
+create or replace function public.current_role()
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select role from public.profiles where id = auth.uid();
+$$;
+
+grant execute on function public.current_role() to authenticated;
+
+create or replace function public.handle_lac_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if lower(new.email) = 'sgs-qs@lac-app.example' then
+    insert into public.profiles(id, display_name, role)
+    values (new.id, 'SGS-QS', 'qs')
+    on conflict (id) do update set display_name=excluded.display_name, role=excluded.role;
+  elsif lower(new.email) = 'pritz@lac-app.example' then
+    insert into public.profiles(id, display_name, role)
+    values (new.id, 'Pritz', 'pritz')
+    on conflict (id) do update set display_name=excluded.display_name, role=excluded.role;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created_lac on auth.users;
+create trigger on_auth_user_created_lac
+after insert or update of email on auth.users
+for each row execute procedure public.handle_lac_user();
+
+-- Bereits vorhandene Benutzer nachziehen
+insert into public.profiles(id, display_name, role)
+select id, 'SGS-QS', 'qs' from auth.users where lower(email)='sgs-qs@lac-app.example'
+on conflict (id) do update set display_name='SGS-QS', role='qs';
+
+insert into public.profiles(id, display_name, role)
+select id, 'Pritz', 'pritz' from auth.users where lower(email)='pritz@lac-app.example'
+on conflict (id) do update set display_name='Pritz', role='pritz';
+
+alter table public.profiles enable row level security;
+alter table public.facades enable row level security;
+alter table public.fields enable row level security;
+alter table public.progress enable row level security;
+alter table public.qs_records enable row level security;
+alter table public.defects enable row level security;
+
+drop policy if exists "profiles_self_read" on public.profiles;
+create policy "profiles_self_read" on public.profiles for select to authenticated using (id = auth.uid());
+
+drop policy if exists "facades_read" on public.facades;
+create policy "facades_read" on public.facades for select to authenticated using (true);
+drop policy if exists "facades_qs_write" on public.facades;
+create policy "facades_qs_write" on public.facades for all to authenticated using (public.current_role()='qs') with check (public.current_role()='qs');
+
+drop policy if exists "fields_read" on public.fields;
+create policy "fields_read" on public.fields for select to authenticated using (true);
+drop policy if exists "fields_qs_write" on public.fields;
+create policy "fields_qs_write" on public.fields for all to authenticated using (public.current_role()='qs') with check (public.current_role()='qs');
+
+drop policy if exists "progress_read" on public.progress;
+create policy "progress_read" on public.progress for select to authenticated using (true);
+drop policy if exists "progress_insert" on public.progress;
+create policy "progress_insert" on public.progress for insert to authenticated with check (public.current_role() in ('qs','pritz'));
+drop policy if exists "progress_update" on public.progress;
+create policy "progress_update" on public.progress for update to authenticated using (public.current_role() in ('qs','pritz')) with check (public.current_role() in ('qs','pritz'));
+drop policy if exists "progress_delete_qs" on public.progress;
+create policy "progress_delete_qs" on public.progress for delete to authenticated using (public.current_role()='qs');
+
+drop policy if exists "qs_qs_read" on public.qs_records;
+create policy "qs_qs_read" on public.qs_records for select to authenticated using (public.current_role()='qs');
+drop policy if exists "qs_qs_write" on public.qs_records;
+create policy "qs_qs_write" on public.qs_records for all to authenticated using (public.current_role()='qs') with check (public.current_role()='qs');
+
+drop policy if exists "defects_qs_read" on public.defects;
+create policy "defects_qs_read" on public.defects for select to authenticated using (public.current_role()='qs');
+drop policy if exists "defects_qs_write" on public.defects;
+create policy "defects_qs_write" on public.defects for all to authenticated using (public.current_role()='qs') with check (public.current_role()='qs');`;
+
+    const els = {
+      loginView: document.getElementById('loginView'), appView: document.getElementById('appView'),
+      password: document.getElementById('passwordInput'), loginBtn: document.getElementById('loginBtn'), loginError: document.getElementById('loginError'),
+      roleBadge: document.getElementById('roleBadge'), headerSub: document.getElementById('headerSub'), refreshBtn: document.getElementById('refreshBtn'), logoutBtn: document.getElementById('logoutBtn'),
+      pageOverview: document.getElementById('pageOverview'), pageFacades: document.getElementById('pageFacades'), pageDefects: document.getElementById('pageDefects'),
+      bottomNav: document.getElementById('bottomNav'), defectsNavBtn: document.getElementById('defectsNavBtn'),
+      networkLine: document.getElementById('networkLine'), globalBanner: document.getElementById('globalBanner'),
+      backdrop: document.getElementById('sheetBackdrop'), sheet: document.getElementById('fieldSheet'), toast: document.getElementById('toast'),
+      setupSql: document.getElementById('setupSql'), copySqlBtn: document.getElementById('copySqlBtn')
+    };
+    els.setupSql.value = SETUP_SQL;
+
+    const state = {
+      accountName: localStorage.getItem('lac.account') || 'SGS-QS',
+      session: null,
+      profile: null,
+      progress: new Map(),
+      qs: new Map(),
+      defects: [],
+      page: localStorage.getItem('lac.page') || 'overview',
+      facadeId: localStorage.getItem('lac.facade') || 'F01_S',
+      filter: localStorage.getItem('lac.filter') || 'all',
+      floorFilter: localStorage.getItem('lac.floor') || 'all',
+      zoom: Number(localStorage.getItem('lac.zoom') || '1'),
+      selectedFieldId: null,
+      realtime: null,
+      dbReady: true,
+      loading: false
+    };
+
+    document.documentElement.style.setProperty('--zoom', String(Math.min(1.35, Math.max(.65, state.zoom))));
+
+    const accountBtns = [...document.querySelectorAll('.account-btn')];
+    function selectAccount(name) {
+      state.accountName = name;
+      localStorage.setItem('lac.account', name);
+      accountBtns.forEach(b => b.classList.toggle('active', b.dataset.account === name));
+      els.password.value = '';
+      els.password.focus();
+    }
+    accountBtns.forEach(b => b.addEventListener('click', () => selectAccount(b.dataset.account)));
+    selectAccount(state.accountName);
+
+    function toast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => els.toast.classList.remove('show'), 1900);
+    }
+    function esc(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+    function fmtDate(v) {
+      if (!v) return '—';
+      const d = new Date(v);
+      return new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).format(d);
+    }
+    function currentRole() { return state.profile?.role || null; }
+    function isQS() { return currentRole() === 'qs'; }
+    function fieldProgress(id) { return state.progress.get(id) || {completed:false}; }
+    function fieldQS(id) { return state.qs.get(id) || {status:'unchecked',note:''}; }
+    function openDefectsForField(id) { return state.defects.filter(d => d.field_id === id && d.status === 'open'); }
+    function allTrackableFields() { return SEED_FIELDS.filter(f => !f.is_void); }
+    function facadeFields(fid) { return SEED_FIELDS.filter(f => f.facade_id === fid && !f.is_void); }
+    function completionPct(fields) {
+      if (!fields.length) return 0;
+      const done = fields.filter(f => fieldProgress(f.id).completed).length;
+      return Math.round(done / fields.length * 100);
+    }
+    function fieldDisplayWidth(mm) {
+      const n = Number(mm) || 1321;
+      return Math.round(Math.max(30, Math.min(78, 12 + n * 0.033)));
+    }
+    function formatName(code) { return FORMAT[code]?.name || code; }
+    function formatDim(field) {
+      if (field.is_model) return 'Modell';
+      return field.width_mm ? `${field.width_mm} × 3368` : '—';
+    }
+
+    function setNetwork(ok, text) {
+      const dot = els.networkLine.querySelector('.dot');
+      dot.classList.toggle('offline', !ok);
+      els.networkLine.querySelector('span:last-child').textContent = text;
+    }
+
+    async function login() {
+      const password = els.password.value;
+      if (!password) { els.loginError.textContent = 'Bitte Passwort eingeben.'; return; }
+      els.loginBtn.disabled = true;
+      els.loginBtn.textContent = 'Anmelden …';
+      els.loginError.textContent = '';
+      try {
+        const email = ACCOUNT_EMAIL[state.accountName];
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        state.session = data.session;
+        await enterApp();
+      } catch (err) {
+        els.loginError.textContent = err?.message?.includes('Invalid login') ? 'Anmeldung fehlgeschlagen. Account oder Passwort prüfen.' : `Fehler: ${err.message || err}`;
+      } finally {
+        els.loginBtn.disabled = false;
+        els.loginBtn.textContent = 'Anmelden';
+      }
+    }
+    els.loginBtn.addEventListener('click', login);
+    els.password.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+    els.copySqlBtn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(SETUP_SQL); toast('SQL kopiert'); }
+      catch { els.setupSql.focus(); els.setupSql.select(); toast('SQL markiert – bitte kopieren'); }
+    });
+
+    async function loadProfile() {
+      const { data, error } = await supabase.from('profiles').select('id,display_name,role').single();
+      if (error) throw error;
+      state.profile = data;
+    }
+
+    async function seedProjectIfQS() {
+      if (!isQS()) return;
+      const facadeRows = FACADE_DEFS.map((f,i) => ({ id:f.id, finger:String(f.finger), title:f.title, group_name:f.group, sort_order:i }));
+      const { error: fErr } = await supabase.from('facades').upsert(facadeRows, { onConflict:'id' });
+      if (fErr) throw fErr;
+      for (let i=0;i<SEED_FIELDS.length;i+=180) {
+        const batch = SEED_FIELDS.slice(i,i+180);
+        const { error } = await supabase.from('fields').upsert(batch, { onConflict:'id' });
+        if (error) throw error;
+      }
+    }
+
+    async function checkProjectReady() {
+      const { count, error } = await supabase.from('facades').select('id', { count:'exact', head:true });
+      if (error) throw error;
+      return (count || 0) > 0;
+    }
+
+    async function loadData() {
+      if (!state.session) return;
+      state.loading = true;
+      try {
+        const p = await supabase.from('progress').select('*');
+        if (p.error) throw p.error;
+        state.progress = new Map((p.data || []).map(x => [x.field_id,x]));
+
+        if (isQS()) {
+          const [q,d] = await Promise.all([
+            supabase.from('qs_records').select('*'),
+            supabase.from('defects').select('*').order('created_at',{ascending:false})
+          ]);
+          if (q.error) throw q.error;
+          if (d.error) throw d.error;
+          state.qs = new Map((q.data || []).map(x => [x.field_id,x]));
+          state.defects = d.data || [];
+        } else {
+          state.qs = new Map(); state.defects = [];
+        }
+        state.dbReady = true;
+        setNetwork(true, 'Mit Supabase verbunden · ' + new Intl.DateTimeFormat('de-DE',{hour:'2-digit',minute:'2-digit'}).format(new Date()));
+        els.globalBanner.innerHTML = '';
+      } catch (err) {
+        state.dbReady = false;
+        setNetwork(false, 'Supabase nicht bereit');
+        const msg = /relation|schema cache|does not exist/i.test(err.message || '')
+          ? 'Die Supabase-Tabellen sind noch nicht eingerichtet. Auf der Anmeldeseite findest du den einmaligen SQL-Block.'
+          : `Daten konnten nicht geladen werden: ${esc(err.message || err)}`;
+        els.globalBanner.innerHTML = `<div class="banner error">${msg}</div>`;
+      } finally {
+        state.loading = false;
+      }
+    }
+
+    async function enterApp() {
+      try {
+        await loadProfile();
+      } catch (err) {
+        els.loginError.textContent = 'Supabase ist noch nicht vollständig eingerichtet. Bitte den SQL-Block unter „Ersteinrichtung Supabase“ ausführen.';
+        await supabase.auth.signOut();
+        return;
+      }
+      els.loginView.classList.add('hidden');
+      els.appView.classList.remove('hidden');
+      els.roleBadge.textContent = state.profile.display_name;
+      els.headerSub.textContent = isQS() ? 'QS · Projekt 1710' : 'Montagefortschritt · Projekt 1710';
+      if (!isQS()) {
+        els.defectsNavBtn.classList.add('hidden');
+        els.bottomNav.classList.add('two');
+        if (state.page === 'defects') state.page = 'overview';
+      } else {
+        els.defectsNavBtn.classList.remove('hidden');
+        els.bottomNav.classList.remove('two');
+      }
+      try {
+        if (isQS()) await seedProjectIfQS();
+        else {
+          const ready = await checkProjectReady();
+          if (!ready) els.globalBanner.innerHTML = '<div class="banner warn">Projektstruktur noch nicht eingespielt. Bitte SGS-QS einmal anmelden.</div>';
+        }
+      } catch (err) {
+        state.dbReady = false;
+        els.globalBanner.innerHTML = `<div class="banner error">Projektstruktur konnte nicht angelegt werden: ${esc(err.message || err)}</div>`;
+      }
+      await loadData();
+      renderAll();
+      subscribeRealtime();
+    }
+
+    async function logout() {
+      if (state.realtime) { try { await supabase.removeChannel(state.realtime); } catch {} state.realtime = null; }
+      await supabase.auth.signOut();
+      state.session = null; state.profile = null; state.progress.clear(); state.qs.clear(); state.defects = [];
+      els.appView.classList.add('hidden'); els.loginView.classList.remove('hidden'); els.password.value = ''; els.loginError.textContent = '';
+    }
+    els.logoutBtn.addEventListener('click', logout);
+    els.refreshBtn.addEventListener('click', async () => { els.refreshBtn.disabled = true; await loadData(); renderAll(); els.refreshBtn.disabled = false; toast('Aktualisiert'); });
+
+    function subscribeRealtime() {
+      if (state.realtime) return;
+      try {
+        state.realtime = supabase.channel('lac-live')
+          .on('postgres_changes',{event:'*',schema:'public',table:'progress'}, debounceRefresh)
+          .on('postgres_changes',{event:'*',schema:'public',table:'qs_records'}, debounceRefresh)
+          .on('postgres_changes',{event:'*',schema:'public',table:'defects'}, debounceRefresh)
+          .subscribe();
+      } catch {}
+    }
+    function debounceRefresh() {
+      clearTimeout(debounceRefresh._t);
+      debounceRefresh._t = setTimeout(async () => { await loadData(); renderAll(); }, 350);
+    }
+
+    function renderAll() {
+      renderNav();
+      renderOverview();
+      renderFacades();
+      if (isQS()) renderDefects();
+    }
+
+    function renderNav() {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === state.page));
+      els.pageOverview.classList.toggle('hidden', state.page !== 'overview');
+      els.pageFacades.classList.toggle('hidden', state.page !== 'facades');
+      els.pageDefects.classList.toggle('hidden', state.page !== 'defects');
+    }
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+      if (btn.dataset.page === 'defects' && !isQS()) return;
+      state.page = btn.dataset.page;
+      localStorage.setItem('lac.page', state.page);
+      renderNav();
+      if (state.page === 'facades') renderFacades();
+    }));
+
+    function renderOverview() {
+      const fields = allTrackableFields();
+      const done = fields.filter(f => fieldProgress(f.id).completed).length;
+      const pct = fields.length ? Math.round(done/fields.length*100) : 0;
+      const checked = isQS() ? fields.filter(f => fieldQS(f.id).status !== 'unchecked').length : 0;
+      const openDef = isQS() ? state.defects.filter(d => d.status === 'open').length : 0;
+      const untestedDone = isQS() ? fields.filter(f => fieldProgress(f.id).completed && fieldQS(f.id).status === 'unchecked').length : 0;
+
+      const facadeCards = FACADE_DEFS.map(f => {
+        const ff = facadeFields(f.id), fp = completionPct(ff);
+        const qsDone = isQS() ? ff.filter(x => fieldQS(x.id).status !== 'unchecked').length : 0;
+        return `<button class="facade-card" type="button" data-open-facade="${f.id}">
+          <div class="facade-card-head"><div><div class="facade-name">${esc(f.title)}</div><div class="facade-meta">${ff.length} Felder${isQS()?` · ${qsDone} QS-geprüft`:''}</div></div><div class="facade-pct">${fp}%</div></div>
+          <div class="progress-track"><div class="progress-bar" style="width:${fp}%"></div></div>
+        </button>`;
+      }).join('');
+
+      els.pageOverview.innerHTML = `
+        <h1 class="page-title">${isQS() ? 'QS-Übersicht' : 'Baufortschritt'}</h1>
+        <p class="page-sub">LAC Doppelfassade · gemeinsamer Stand aller hinterlegten Fassadenflächen</p>
+        <div class="stats">
+          <div class="card stat"><div class="stat-value">${pct}%</div><div class="stat-label">Pritz fertiggemeldet</div><div class="progress-track"><div class="progress-bar" style="width:${pct}%"></div></div></div>
+          <div class="card stat"><div class="stat-value">${done}</div><div class="stat-label">fertige Felder von ${fields.length}</div></div>
+          ${isQS()?`<div class="card stat"><div class="stat-value">${untestedDone}</div><div class="stat-label">fertig, aber noch nicht QS-geprüft</div></div>
+          <div class="card stat"><div class="stat-value">${openDef}</div><div class="stat-label">offene Mängel · ${checked} Felder geprüft</div></div>`:''}
+        </div>
+        ${isQS() && untestedDone>0 ? `<button type="button" class="btn primary" id="openUntestedBtn" style="width:100%;margin-bottom:5px"><i class="fa-solid fa-magnifying-glass"></i> ${untestedDone} fertige, ungeprüfte Felder anzeigen</button>` : ''}
+        <div class="section-title">Fassadenflächen</div>
+        <div class="facade-list">${facadeCards}</div>`;
+
+      els.pageOverview.querySelectorAll('[data-open-facade]').forEach(b => b.addEventListener('click', () => openFacade(b.dataset.openFacade)));
+      const u = document.getElementById('openUntestedBtn');
+      if (u) u.addEventListener('click', () => { state.filter='done-unchecked'; state.page='facades'; localStorage.setItem('lac.filter',state.filter); localStorage.setItem('lac.page',state.page); renderAll(); });
+    }
+
+    function openFacade(id) {
+      state.facadeId = id;
+      state.page = 'facades';
+      state.floorFilter = 'all';
+      localStorage.setItem('lac.facade',id); localStorage.setItem('lac.page','facades'); localStorage.setItem('lac.floor','all');
+      renderAll();
+    }
+
+    function renderFacades() {
+      const f = FACADE_MAP[state.facadeId] || FACADE_DEFS[0];
+      const filters = isQS() ? [
+        ['all','Alle'],['open','Nicht fertig'],['done','Fertig'],['done-unchecked','Fertig · ungeprüft'],['defects','Mit offenem Mangel']
+      ] : [['all','Alle'],['open','Nicht fertig'],['done','Fertig']];
+      const floorOptions = ['all',...f.rows.map(r=>r.floor)];
+      const zoomPct = Math.round(state.zoom*100);
+
+      els.pageFacades.innerHTML = `
+        <div class="facade-head"><div><h2>${esc(f.title)}</h2><p>${f.group} · Geschosse sind links fest eingeblendet</p></div></div>
+        <div class="toolbar">
+          <select id="facadeSelect" class="select" aria-label="Fassade auswählen">${FACADE_DEFS.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.title)}</option>`).join('')}</select>
+          <select id="floorSelect" class="select" aria-label="Geschoss filtern">${floorOptions.map(x=>`<option value="${x}" ${x===state.floorFilter?'selected':''}>${x==='all'?'Alle Geschosse':x}</option>`).join('')}</select>
+          <div class="segmented" id="filterSegment">${filters.map(([v,l])=>`<button type="button" data-filter="${v}" class="${state.filter===v?'active':''}">${l}</button>`).join('')}</div>
+          <div class="zoom-control"><button id="zoomOut" type="button" class="btn small">−</button><span class="zoom-value">${zoomPct}%</span><button id="zoomIn" type="button" class="btn small">+</button></div>
+        </div>
+        <div class="legend">${legendHtml()}</div>
+        <div class="banner warn" style="padding:8px 10px;margin-bottom:10px"><strong>Orientierung:</strong> Türelemente sind gelb und zusätzlich durch eine durchgehende kräftige Linie gegenüber den Regelfeldern abgesetzt. Schmale Randfelder werden auch schmaler dargestellt.</div>
+        <div class="facade-shell"><div class="facade-scroll"><div id="facadeGrid" class="facade-grid"></div></div></div>`;
+
+      document.getElementById('facadeSelect').addEventListener('change', e => { state.facadeId=e.target.value; state.floorFilter='all'; localStorage.setItem('lac.facade',state.facadeId); renderFacades(); });
+      document.getElementById('floorSelect').addEventListener('change', e => { state.floorFilter=e.target.value; localStorage.setItem('lac.floor',state.floorFilter); renderFacadeGrid(); });
+      document.getElementById('filterSegment').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.filter=b.dataset.filter; localStorage.setItem('lac.filter',state.filter); renderFacades(); }));
+      document.getElementById('zoomOut').addEventListener('click',()=>setZoom(state.zoom-.1));
+      document.getElementById('zoomIn').addEventListener('click',()=>setZoom(state.zoom+.1));
+      renderFacadeGrid();
+    }
+
+    function setZoom(v) {
+      state.zoom = Math.min(1.4,Math.max(.65,Math.round(v*10)/10));
+      localStorage.setItem('lac.zoom',String(state.zoom));
+      document.documentElement.style.setProperty('--zoom',String(state.zoom));
+      renderFacades();
+    }
+
+    function legendHtml() {
+      const codes = ['A','B','C','RA','RB','RC','RD','RE','T','M'];
+      return codes.map(c=>`<div class="legend-item"><span class="legend-swatch" style="background:${FORMAT[c].css}"></span><span>${FORMAT[c].short} · ${FORMAT[c].name}</span></div>`).join('') +
+        `<div class="legend-item"><span class="legend-swatch" style="border:3px solid var(--green);background:transparent"></span><span>fertig</span></div>` +
+        (isQS()?`<div class="legend-item"><span class="legend-swatch" style="background:var(--red);border-radius:50%"></span><span>offener Mangel</span></div>`:'');
+    }
+
+    function fieldPassesFilter(field) {
+      if (field.is_void) return true;
+      const p = fieldProgress(field.id), q = fieldQS(field.id), defs = openDefectsForField(field.id);
+      if (state.filter === 'open') return !p.completed;
+      if (state.filter === 'done') return !!p.completed;
+      if (state.filter === 'done-unchecked') return p.completed && q.status === 'unchecked';
+      if (state.filter === 'defects') return defs.length > 0;
+      return true;
+    }
+
+    function renderFacadeGrid() {
+      const grid = document.getElementById('facadeGrid');
+      if (!grid) return;
+      const facade = FACADE_MAP[state.facadeId];
+      const visibleRows = state.floorFilter === 'all' ? facade.rows : facade.rows.filter(r=>r.floor===state.floorFilter);
+      const colWidths = facade.widths.map(fieldDisplayWidth);
+      grid.style.gridTemplateColumns = `${Math.round(72*state.zoom)}px ${colWidths.map(w=>`${Math.round(w*state.zoom)}px`).join(' ')}`;
+      let html='';
+      visibleRows.forEach((r, visibleRowIndex) => {
+        const originalRowIndex = facade.rows.findIndex(x=>x.floor===r.floor);
+        html += `<div class="floor-label" style="grid-row:${visibleRowIndex+1};grid-column:1">${esc(r.floor)}</div>`;
+        r.codes.forEach((code,colIndex)=>{
+          const fieldId = `${facade.id}_${floorSlug(r.floor)}_C${String(colIndex+1).padStart(2,'0')}`;
+          const field = FIELD_MAP[fieldId];
+          const p = fieldProgress(fieldId); const q=fieldQS(fieldId); const defs=openDefectsForField(fieldId);
+          const pass = fieldPassesFilter(field);
+          const isVoid = code==='V', isModel=code==='M';
+          const meta=FORMAT[code] || FORMAT.V;
+          const narrow = (facade.widths[colIndex] || 0) < 900;
+          const doorLeft = facade.doorColumns?.[0] === colIndex+1;
+          const doorRight = facade.doorColumns?.[1] === colIndex+1;
+          const classes=['field-cell'];
+          if(isVoid) classes.push('void'); if(isModel) classes.push('model'); if(narrow) classes.push('narrow');
+          if(!isVoid) classes.push(p.completed?'completed':'not-completed');
+          if(doorLeft) classes.push('door-zone-left'); if(doorRight) classes.push('door-zone-right');
+          const opacity = pass ? 1 : .14;
+          const qsBadge = isQS() ? qsBadgeHtml(q.status) : '';
+          html += `<button type="button" ${isVoid?'disabled':''} class="${classes.join(' ')}" data-field-id="${fieldId}" style="grid-row:${visibleRowIndex+1};grid-column:${colIndex+2};--cell-bg:${meta.css};opacity:${opacity}" aria-label="${esc(r.floor)} Feld ${colIndex+1} ${esc(meta.name)}">
+            ${!isVoid?`<div class="field-inner"><div class="field-code">${meta.short}</div><div class="field-dim">${isModel?'Modell':`${field.width_mm} × 3368`}</div><div class="field-label">${esc(meta.name)}</div></div>`:''}
+            ${p.completed?'<span class="completion-badge"><i class="fa-solid fa-check"></i></span>':''}
+            ${qsBadge}
+            ${isQS() && defs.length?'<span class="defect-marker"></span>':''}
+          </button>`;
+        });
+      });
+      grid.innerHTML = html;
+      grid.querySelectorAll('[data-field-id]:not(:disabled)').forEach(b => b.addEventListener('click',()=>openFieldSheet(b.dataset.fieldId)));
+    }
+
+    function qsBadgeHtml(status) {
+      if(status==='ok') return '<span class="qs-badge qs-ok"><i class="fa-solid fa-check"></i></span>';
+      if(status==='note') return '<span class="qs-badge qs-note"><i class="fa-solid fa-exclamation"></i></span>';
+      if(status==='defect') return '<span class="qs-badge qs-defect"><i class="fa-solid fa-triangle-exclamation"></i></span>';
+      if(status==='recheck') return '<span class="qs-badge qs-recheck"><i class="fa-solid fa-rotate"></i></span>';
+      return '';
+    }
+
+    function openFieldSheet(fieldId) {
+      state.selectedFieldId = fieldId;
+      renderFieldSheet();
+      els.backdrop.classList.add('open'); els.sheet.classList.add('open');
+    }
+    function closeSheet() { els.backdrop.classList.remove('open'); els.sheet.classList.remove('open'); state.selectedFieldId=null; }
+    els.backdrop.addEventListener('click',closeSheet);
+
+    function renderFieldSheet() {
+      const field=FIELD_MAP[state.selectedFieldId]; if(!field) return;
+      const facade=FACADE_MAP[field.facade_id]; const p=fieldProgress(field.id); const q=fieldQS(field.id); const defs=state.defects.filter(d=>d.field_id===field.id);
+      const fmt=FORMAT[field.format_code]||FORMAT.V;
+      const colLabel=`Feld ${String(field.col_no).padStart(2,'0')}`;
+      const progressText=p.completed?'Fertig':'Nicht fertig';
+      const progressAction=p.completed?'Als nicht fertig zurücksetzen':'Als fertig markieren';
+      const progressClass=p.completed?'ghost':'green';
+
+      let roleContent='';
+      if(!isQS()) {
+        roleContent=`<div class="form-group"><button id="toggleProgressBtn" type="button" class="btn ${progressClass}" style="width:100%">${p.completed?'<i class="fa-solid fa-rotate-left"></i>':'<i class="fa-solid fa-check"></i>'} ${progressAction}</button></div>
+        <div class="banner warn">Für Pritz gibt es bewusst nur <strong>fertig / nicht fertig</strong>. QS-Status, Notizen und Mängel sind im SGS-QS-Account getrennt.</div>`;
+      } else {
+        const statusButtons=[['unchecked','Ungeprüft'],['ok','QS i. O.'],['note','Hinweis'],['defect','Mangel'],['recheck','Nachprüfung']];
+        roleContent=`
+          <div class="form-group"><label class="form-label">QS-Status</label><div class="status-grid" id="qsStatusGrid">${statusButtons.map(([v,l])=>`<button type="button" data-status="${v}" class="status-btn ${q.status===v?'active':''}">${l}</button>`).join('')}</div></div>
+          <div class="form-group"><label class="form-label" for="qsNote">QS-Notiz</label><textarea id="qsNote" class="textarea" placeholder="Kurze Feststellung / Hinweis …">${esc(q.note||'')}</textarea></div>
+          <button id="saveQsBtn" type="button" class="btn primary" style="width:100%">QS-Eintrag speichern</button>
+          <div class="section-title">Mängel zu diesem Feld</div>
+          ${defs.length?defs.map(defectSheetHtml).join(''):'<div class="empty" style="padding:12px">Noch kein Mangel angelegt.</div>'}
+          <div class="form-group"><label class="form-label" for="newDefectText">Neuen Mangel anlegen</label><textarea id="newDefectText" class="textarea" placeholder="Mangel beschreiben …"></textarea></div>
+          <button id="addDefectBtn" type="button" class="btn red" style="width:100%">Mangel anlegen</button>`;
+      }
+
+      els.sheet.innerHTML=`<div class="sheet-handle"></div>
+        <h2 id="sheetTitle" class="sheet-title">${esc(facade.title)} · ${esc(field.floor)}</h2>
+        <div class="sheet-sub">${colLabel} · ${esc(fmt.name)}</div>
+        <div class="detail-grid">
+          <div class="detail"><div class="detail-label">Format</div><div class="detail-value">${esc(fmt.name)}<br>${esc(formatDim(field))}</div></div>
+          <div class="detail"><div class="detail-label">Pritz-Status</div><div class="detail-value">${progressText}${p.completed_at?`<br><span style="font-size:11px;color:var(--muted)">${fmtDate(p.completed_at)}</span>`:''}</div></div>
+          <div class="detail"><div class="detail-label">Geschoss</div><div class="detail-value">${esc(field.floor)}</div></div>
+          <div class="detail"><div class="detail-label">Feld-ID</div><div class="detail-value" style="font-size:11px">${esc(field.id)}</div></div>
+        </div>
+        ${roleContent}
+        <button id="closeSheetBtn" type="button" class="btn ghost" style="width:100%;margin-top:14px">Schließen</button>`;
+
+      document.getElementById('closeSheetBtn').addEventListener('click',closeSheet);
+      if(!isQS()) {
+        document.getElementById('toggleProgressBtn').addEventListener('click',()=>setProgress(field.id,!p.completed));
+      } else {
+        document.getElementById('qsStatusGrid').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+          document.getElementById('qsStatusGrid').querySelectorAll('button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+        }));
+        document.getElementById('saveQsBtn').addEventListener('click',()=>saveQS(field.id));
+        document.getElementById('addDefectBtn').addEventListener('click',()=>addDefect(field.id));
+        els.sheet.querySelectorAll('[data-close-defect]').forEach(b=>b.addEventListener('click',()=>closeDefect(Number(b.dataset.closeDefect))));
+        els.sheet.querySelectorAll('[data-reopen-defect]').forEach(b=>b.addEventListener('click',()=>reopenDefect(Number(b.dataset.reopenDefect))));
+      }
+    }
+
+    function defectSheetHtml(d) {
+      return `<div class="defect-card" style="margin-bottom:8px"><div class="defect-head"><div><div class="defect-id">M-${String(d.id).padStart(3,'0')}</div><div class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</div></div>${d.status==='open'?`<button type="button" class="btn small" data-close-defect="${d.id}">Schließen</button>`:`<button type="button" class="btn small ghost" data-reopen-defect="${d.id}">Wieder öffnen</button>`}</div><div class="defect-text">${esc(d.description)}</div><div class="defect-meta">angelegt ${fmtDate(d.created_at)}${d.closed_at?` · geschlossen ${fmtDate(d.closed_at)}`:''}</div></div>`;
+    }
+
+    async function setProgress(fieldId, completed) {
+      if(!state.dbReady) { toast('Supabase nicht bereit'); return; }
+      const payload={ field_id:fieldId, completed, completed_at:completed?new Date().toISOString():null, completed_by:state.session.user.id, updated_at:new Date().toISOString() };
+      const {data,error}=await supabase.from('progress').upsert(payload,{onConflict:'field_id'}).select().single();
+      if(error){toast('Speichern fehlgeschlagen'); return;}
+      state.progress.set(fieldId,data); toast(completed?'Als fertig gespeichert':'Status zurückgesetzt');
+      renderAll(); renderFieldSheet();
+    }
+
+    async function saveQS(fieldId) {
+      const active=document.querySelector('#qsStatusGrid .status-btn.active');
+      const status=active?.dataset.status || 'unchecked';
+      const note=document.getElementById('qsNote').value.trim();
+      const payload={ field_id:fieldId,status,note,checked_at:status==='unchecked'?null:new Date().toISOString(),checked_by:state.session.user.id,updated_at:new Date().toISOString() };
+      const {data,error}=await supabase.from('qs_records').upsert(payload,{onConflict:'field_id'}).select().single();
+      if(error){toast('QS-Eintrag konnte nicht gespeichert werden');return;}
+      state.qs.set(fieldId,data); toast('QS-Eintrag gespeichert'); renderAll(); renderFieldSheet();
+    }
+
+    async function addDefect(fieldId) {
+      const t=document.getElementById('newDefectText'); const description=t.value.trim();
+      if(!description){toast('Bitte Mangel beschreiben');return;}
+      const {data,error}=await supabase.from('defects').insert({field_id:fieldId,status:'open',description,created_by:state.session.user.id}).select().single();
+      if(error){toast('Mangel konnte nicht angelegt werden');return;}
+      state.defects.unshift(data);
+      const q=fieldQS(fieldId);
+      if(q.status!=='defect') {
+        const payload={field_id:fieldId,status:'defect',note:q.note||'',checked_at:new Date().toISOString(),checked_by:state.session.user.id,updated_at:new Date().toISOString()};
+        const r=await supabase.from('qs_records').upsert(payload,{onConflict:'field_id'}).select().single();
+        if(!r.error) state.qs.set(fieldId,r.data);
+      }
+      toast('Mangel angelegt'); renderAll(); renderFieldSheet();
+    }
+
+    async function closeDefect(id) {
+      const now=new Date().toISOString();
+      const {data,error}=await supabase.from('defects').update({status:'closed',closed_at:now,closed_by:state.session.user.id}).eq('id',id).select().single();
+      if(error){toast('Mangel konnte nicht geschlossen werden');return;}
+      state.defects=state.defects.map(d=>d.id===id?data:d); toast('Mangel geschlossen'); renderAll(); if(state.selectedFieldId)renderFieldSheet();
+    }
+    async function reopenDefect(id) {
+      const {data,error}=await supabase.from('defects').update({status:'open',closed_at:null,closed_by:null}).eq('id',id).select().single();
+      if(error){toast('Mangel konnte nicht geöffnet werden');return;}
+      state.defects=state.defects.map(d=>d.id===id?data:d); toast('Mangel wieder geöffnet'); renderAll(); if(state.selectedFieldId)renderFieldSheet();
+    }
+
+    function renderDefects() {
+      const open=state.defects.filter(d=>d.status==='open'), closed=state.defects.filter(d=>d.status==='closed');
+      const makeCard=d=>{
+        const f=FIELD_MAP[d.field_id]; const facade=f?FACADE_MAP[f.facade_id]:null;
+        return `<div class="defect-card"><div class="defect-head"><div><div class="defect-id">M-${String(d.id).padStart(3,'0')}</div><div class="defect-title">${facade?esc(facade.title):'Fassade'} · ${f?esc(f.floor):''} · Feld ${f?String(f.col_no).padStart(2,'0'):''}</div></div><span class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</span></div><div class="defect-text">${esc(d.description)}</div><div class="defect-meta">${fmtDate(d.created_at)}</div><div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn small primary" data-jump-field="${d.field_id}">Feld öffnen</button>${d.status==='open'?`<button type="button" class="btn small" data-close-list="${d.id}">Schließen</button>`:''}</div></div>`;
+      };
+      els.pageDefects.innerHTML=`<h1 class="page-title">Mängel</h1><p class="page-sub">Nur im SGS-QS-Account sichtbar.</p><div class="stats"><div class="card stat"><div class="stat-value">${open.length}</div><div class="stat-label">offen</div></div><div class="card stat"><div class="stat-value">${closed.length}</div><div class="stat-label">geschlossen</div></div></div><div class="section-title">Offene Mängel</div><div class="defect-list">${open.length?open.map(makeCard).join(''):'<div class="card empty">Keine offenen Mängel.</div>'}</div>${closed.length?`<div class="section-title">Geschlossen</div><div class="defect-list">${closed.slice(0,30).map(makeCard).join('')}</div>`:''}`;
+      els.pageDefects.querySelectorAll('[data-jump-field]').forEach(b=>b.addEventListener('click',()=>{ const field=FIELD_MAP[b.dataset.jumpField]; if(field){state.facadeId=field.facade_id;state.page='facades';localStorage.setItem('lac.facade',state.facadeId);localStorage.setItem('lac.page','facades');renderAll();setTimeout(()=>openFieldSheet(field.id),50);} }));
+      els.pageDefects.querySelectorAll('[data-close-list]').forEach(b=>b.addEventListener('click',()=>closeDefect(Number(b.dataset.closeList))));
+    }
+
+    window.addEventListener('online',()=>setNetwork(true,'Netzwerk verfügbar'));
+    window.addEventListener('offline',()=>setNetwork(false,'Offline – Änderungen nicht möglich'));
+
+    supabase.auth.onAuthStateChange((event,session)=>{ state.session=session; if(event==='SIGNED_OUT'){ state.session=null; } });
+
+    const { data:{ session } } = await supabase.auth.getSession();
+    if(session){ state.session=session; await enterApp(); }
+  </script>
+</body>
+</html>
