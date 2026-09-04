@@ -17,6 +17,7 @@
   <link rel="shortcut icon" type="image/png" href="./apple-touch-icon.png?v=4">
   <link rel="icon" type="image/png" sizes="192x192" href="./android-chrome-192x192.png?v=1">
   <link rel="icon" type="image/png" sizes="512x512" href="./android-chrome-512x512.png?v=1">
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22LAC%20Fassaden-QS%22%2C%22short_name%22%3A%22LAC%20QS%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%2F%22%2C%22background_color%22%3A%22%23f5f5f7%22%2C%22theme_color%22%3A%22%230d0d0f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22.%2Fandroid-chrome-192x192.png%3Fv%3D1%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22.%2Fandroid-chrome-512x512.png%3Fv%3D1%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     :root {
@@ -279,9 +280,40 @@
     .account-btn.active { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); background:color-mix(in srgb, var(--blue) 10%, var(--surface-solid)); }
     .login-card .text-input { width:100%; }
     .login-error { min-height:18px; margin:8px 0 0; color:var(--red); font-size:12px; }
-    .install-hint { display:flex; align-items:flex-start; gap:10px; margin-top:14px; padding:11px 12px; border:1px solid var(--border); border-radius:14px; background:var(--surface-2); color:var(--muted); font-size:12px; line-height:1.35; }
-    .install-hint i { color:var(--blue); font-size:16px; margin-top:1px; flex:0 0 auto; }
-    .install-hint strong { display:block; color:var(--text); font-size:12px; margin-bottom:2px; }
+    .install-guide-entry { margin-top:14px; }
+    .install-guide-trigger { width:100%; display:flex; align-items:center; gap:12px; text-align:left; border:1px solid var(--border); background:var(--surface-2); border-radius:16px; padding:12px; cursor:pointer; }
+    .install-guide-trigger:hover { background:color-mix(in srgb, var(--surface-2) 78%, var(--blue) 22%); }
+    .guide-trigger-icon { width:38px; height:38px; flex:0 0 38px; display:grid; place-items:center; border-radius:12px; background:color-mix(in srgb, var(--blue) 14%, var(--surface-solid)); color:var(--blue); font-size:18px; }
+    .guide-trigger-copy { min-width:0; flex:1; }
+    .guide-trigger-title { display:block; color:var(--text); font-size:13px; font-weight:760; line-height:1.25; }
+    .guide-trigger-sub { display:block; color:var(--muted); font-size:12px; line-height:1.35; margin-top:2px; }
+    .guide-trigger-chevron { color:var(--muted); font-size:14px; }
+    .guide-modal { position:fixed; inset:0; z-index:140; opacity:0; pointer-events:none; transition:opacity .22s ease; }
+    .guide-modal.open { opacity:1; pointer-events:auto; }
+    .guide-modal-backdrop { position:absolute; inset:0; background:rgba(0,0,0,.34); }
+    .guide-modal-panel { position:absolute; left:10px; right:10px; top:calc(12px + var(--safe-top)); bottom:calc(12px + var(--safe-bottom)); background:var(--surface-solid); border:1px solid var(--border); border-radius:24px; box-shadow:var(--shadow); overflow:auto; padding:14px 14px 18px; }
+    .guide-topbar { display:flex; align-items:center; justify-content:space-between; gap:10px; position:sticky; top:0; z-index:1; background:linear-gradient(to bottom, var(--surface-solid) 78%, rgba(255,255,255,0)); padding-bottom:8px; }
+    .guide-title-wrap { display:flex; align-items:center; gap:10px; min-width:0; }
+    .guide-modal-icon { width:42px; height:42px; display:grid; place-items:center; border-radius:14px; background:color-mix(in srgb, var(--blue) 14%, var(--surface-solid)); color:var(--blue); font-size:20px; flex:0 0 42px; }
+    .guide-title { margin:0; font-size:20px; font-weight:800; letter-spacing:-.03em; }
+    .guide-subtitle { margin:2px 0 0; color:var(--muted); font-size:12px; line-height:1.35; }
+    .guide-close { border:1px solid var(--border); background:var(--surface-2); width:38px; height:38px; border-radius:12px; display:grid; place-items:center; cursor:pointer; }
+    .guide-intro { border:1px solid var(--border); background:var(--surface-2); border-radius:18px; padding:12px; font-size:13px; line-height:1.45; margin:4px 0 14px; }
+    .guide-grid { display:grid; gap:12px; }
+    .guide-section { border:1px solid var(--border); background:var(--surface); border-radius:18px; padding:14px; }
+    .guide-section-head { display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; }
+    .guide-section-icon { width:36px; height:36px; display:grid; place-items:center; border-radius:12px; background:color-mix(in srgb, var(--blue) 12%, var(--surface-solid)); color:var(--blue); font-size:18px; flex:0 0 36px; }
+    .guide-section-title { margin:0; font-size:16px; font-weight:780; }
+    .guide-section-sub { margin:2px 0 0; color:var(--muted); font-size:12px; line-height:1.35; }
+    .guide-steps { display:grid; gap:9px; }
+    .guide-step { display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:flex-start; }
+    .guide-step-badge { width:34px; height:34px; display:grid; place-items:center; border-radius:11px; background:var(--surface-2); color:var(--text); font-size:15px; border:1px solid var(--border); }
+    .guide-step-card { border:1px solid var(--border); background:var(--surface-solid); border-radius:14px; padding:10px 11px; }
+    .guide-step-title { font-size:13px; font-weight:760; line-height:1.3; }
+    .guide-step-text { margin-top:3px; color:var(--muted); font-size:12px; line-height:1.45; }
+    .guide-inline-icons { display:inline-flex; gap:6px; align-items:center; margin:0 2px; }
+    .guide-note { margin-top:12px; border-radius:14px; padding:10px 11px; font-size:12px; line-height:1.45; background:color-mix(in srgb, var(--yellow) 10%, var(--surface-solid)); border:1px solid color-mix(in srgb, var(--yellow) 38%, var(--border)); }
+    body.modal-open { overflow:hidden; }
     .toast { position:fixed; z-index:120; left:50%; bottom:calc(88px + var(--safe-bottom)); transform:translate(-50%,20px); opacity:0; pointer-events:none; background:#111; color:#fff; border-radius:999px; padding:10px 14px; font-size:12px; font-weight:650; transition:.2s ease; white-space:nowrap; max-width:90vw; overflow:hidden; text-overflow:ellipsis; }
     .toast.show { opacity:1; transform:translate(-50%,0); }
     .banner { border-radius:14px; padding:10px 12px; margin-bottom:12px; font-size:12px; line-height:1.35; }
@@ -320,9 +352,15 @@
       <input id="passwordInput" class="text-input" type="password" autocomplete="current-password" placeholder="Passwort eingeben">
       <button id="loginBtn" type="button" class="btn primary" style="width:100%;margin-top:10px">Anmelden</button>
       <div id="loginError" class="login-error" role="alert"></div>
-      <div id="installHint" class="install-hint">
-        <i class="fa-solid fa-mobile-screen-button"></i>
-        <div><strong>Als App auf den Home-Bildschirm</strong><span id="installHintText">iPhone: in Safari über Teilen → Zum Home-Bildschirm. Android: in Chrome über ⋮ → Zum Startbildschirm hinzufügen.</span></div>
+      <div id="installGuideEntry" class="install-guide-entry">
+        <button id="openInstallGuideBtn" type="button" class="install-guide-trigger" aria-haspopup="dialog" aria-controls="installGuideModal">
+          <span class="guide-trigger-icon"><i class="fa-solid fa-house-circle-check"></i></span>
+          <span class="guide-trigger-copy">
+            <span class="guide-trigger-title">Anleitung: App auf den Home-Bildschirm legen</span>
+            <span class="guide-trigger-sub">Schritt-für-Schritt für iPhone, Android und Google-Pixel-Geräte</span>
+          </span>
+          <i class="fa-solid fa-chevron-right guide-trigger-chevron" aria-hidden="true"></i>
+        </button>
       </div>
 
     </div>
@@ -363,6 +401,112 @@
   <div id="sheetBackdrop" class="sheet-backdrop"></div>
   <section id="fieldSheet" class="sheet" aria-modal="true" aria-labelledby="sheetTitle"></section>
   <div id="toast" class="toast" role="status"></div>
+
+  <div id="installGuideModal" class="guide-modal hidden" aria-hidden="true">
+    <div class="guide-modal-backdrop" data-close-install-guide></div>
+    <section class="guide-modal-panel" role="dialog" aria-modal="true" aria-labelledby="installGuideTitle">
+      <div class="guide-topbar">
+        <div class="guide-title-wrap">
+          <div class="guide-modal-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+          <div>
+            <h2 id="installGuideTitle" class="guide-title">App auf den Home-Bildschirm legen</h2>
+            <p class="guide-subtitle">Einfache Anleitung für iPhone, Android und Google Pixel</p>
+          </div>
+        </div>
+        <button id="closeInstallGuideBtn" type="button" class="guide-close" aria-label="Anleitung schließen"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="guide-intro">
+        Diese Website lässt sich wie eine App auf dem Handy speichern. Danach kannst du sie direkt vom <strong>Home-Bildschirm</strong> öffnen – ohne jedes Mal erst den Browser zu suchen. Am besten funktioniert das mit <strong>Safari auf dem iPhone</strong> und mit <strong>Chrome auf Android / Google Pixel</strong>.
+      </div>
+
+      <div class="guide-grid">
+        <section class="guide-section">
+          <div class="guide-section-head">
+            <div class="guide-section-icon"><i class="fa-brands fa-safari"></i></div>
+            <div>
+              <h3 class="guide-section-title">iPhone / iPad (Safari)</h3>
+              <p class="guide-section-sub">Bitte möglichst in Safari öffnen. Dort ist die Funktion am zuverlässigsten.</p>
+            </div>
+          </div>
+          <div class="guide-steps">
+            <div class="guide-step">
+              <div class="guide-step-badge">1</div>
+              <div class="guide-step-card">
+                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-brands fa-safari"></i></span>Die Website in Safari öffnen</div>
+                <div class="guide-step-text">Falls der Link in WhatsApp, Mail oder einem anderen Browser geöffnet wurde: unten oder oben auf <strong>Teilen</strong> tippen und dann <strong>in Safari öffnen</strong> wählen.</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="guide-step-badge">2</div>
+              <div class="guide-step-card">
+                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-arrow-up-from-bracket"></i></span>Auf „Teilen“ tippen</div>
+                <div class="guide-step-text">In Safari unten mittig auf das <strong>Teilen-Symbol</strong> tippen. Das ist das Kästchen mit dem Pfeil nach oben.</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="guide-step-badge">3</div>
+              <div class="guide-step-card">
+                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-plus"></i><i class="fa-solid fa-mobile-screen"></i></span>„Zum Home-Bildschirm“ auswählen</div>
+                <div class="guide-step-text">In der Liste etwas nach unten scrollen und den Eintrag <strong>„Zum Home-Bildschirm“</strong> antippen.</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="guide-step-badge">4</div>
+              <div class="guide-step-card">
+                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-check"></i></span>Mit „Hinzufügen“ bestätigen</div>
+                <div class="guide-step-text">Den vorgeschlagenen Namen so lassen oder anpassen und oben rechts auf <strong>„Hinzufügen“</strong> tippen. Danach erscheint die App als Symbol auf dem Home-Bildschirm.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="guide-section">
+          <div class="guide-section-head">
+            <div class="guide-section-icon"><i class="fa-brands fa-chrome"></i></div>
+            <div>
+              <h3 class="guide-section-title">Android / Google Phones / Pixel (Chrome)</h3>
+              <p class="guide-section-sub">Am besten in Google Chrome öffnen. Je nach Handy heißt der Menüpunkt leicht unterschiedlich.</p>
+            </div>
+          </div>
+          <div class="guide-steps">
+            <div class="guide-step">
+              <div class="guide-step-badge">1</div>
+              <div class="guide-step-card">
+                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-brands fa-chrome"></i></span>Die Website in Chrome öffnen</div>
+                <div class="guide-step-text">Wenn der Link in einer anderen App geöffnet wurde, den Browser <strong>Chrome</strong> verwenden. Auf Google-Pixel-Handys ist Chrome in der Regel schon vorhanden.</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="guide-step-badge">2</div>
+              <div class="guide-step-card">
+                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-ellipsis-vertical"></i></span>Oben rechts auf das Menü tippen</div>
+                <div class="guide-step-text">In Chrome oben rechts auf die <strong>drei Punkte</strong> tippen. Dadurch öffnet sich das Hauptmenü.</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="guide-step-badge">3</div>
+              <div class="guide-step-card">
+                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-house"></i><i class="fa-solid fa-download"></i></span>„Zum Startbildschirm hinzufügen“ oder „App installieren“ wählen</div>
+                <div class="guide-step-text">Je nach Android-Handy steht dort entweder <strong>„Zum Startbildschirm hinzufügen“</strong>, <strong>„Zum Home-Bildschirm hinzufügen“</strong> oder <strong>„App installieren“</strong>. Einen dieser Einträge antippen.</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="guide-step-badge">4</div>
+              <div class="guide-step-card">
+                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-check"></i></span>Mit „Hinzufügen“ oder „Installieren“ bestätigen</div>
+                <div class="guide-step-text">Den Vorschlag bestätigen. Danach erscheint die App als eigenes Symbol auf dem Startbildschirm und kann direkt dort geöffnet werden.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="guide-note">
+        <strong>Wichtig:</strong> Falls die App später noch das alte Symbol zeigt oder nicht richtig im Vollbild startet, die vorhandene Verknüpfung vom Home-Bildschirm löschen und die Website danach noch einmal neu hinzufügen.
+      </div>
+    </section>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm';
@@ -574,7 +718,9 @@
       pageOverview: document.getElementById('pageOverview'), pageFacades: document.getElementById('pageFacades'), pageDefects: document.getElementById('pageDefects'),
       bottomNav: document.getElementById('bottomNav'), defectsNavBtn: document.getElementById('defectsNavBtn'),
       networkLine: document.getElementById('networkLine'), globalBanner: document.getElementById('globalBanner'),
-      backdrop: document.getElementById('sheetBackdrop'), sheet: document.getElementById('fieldSheet'), toast: document.getElementById('toast')
+      backdrop: document.getElementById('sheetBackdrop'), sheet: document.getElementById('fieldSheet'), toast: document.getElementById('toast'),
+      installGuideEntry: document.getElementById('installGuideEntry'), openInstallGuideBtn: document.getElementById('openInstallGuideBtn'),
+      installGuideModal: document.getElementById('installGuideModal'), closeInstallGuideBtn: document.getElementById('closeInstallGuideBtn')
     };
     const state = {
       accountName: localStorage.getItem('lac.account') || 'SGS-QS',
@@ -609,16 +755,29 @@
     accountBtns.forEach(b => b.addEventListener('click', () => selectAccount(b.dataset.account)));
     selectAccount(state.accountName);
 
-    const installHint = document.getElementById('installHint');
-    const installHintText = document.getElementById('installHintText');
     const standaloneMode = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    if (standaloneMode) {
-      installHint?.classList.add('hidden');
-    } else if (/Android/i.test(navigator.userAgent)) {
-      installHintText.textContent = 'Android / Chrome: oben rechts auf ⋮ tippen und „Zum Startbildschirm hinzufügen“ oder „App installieren“ wählen.';
-    } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      installHintText.textContent = 'iPhone / Safari: auf Teilen tippen, „Zum Home-Bildschirm“ wählen und anschließend „Hinzufügen“.';
+    if (standaloneMode) els.installGuideEntry?.classList.add('hidden');
+
+    function openInstallGuide() {
+      if (!els.installGuideModal) return;
+      els.installGuideModal.classList.remove('hidden');
+      requestAnimationFrame(() => els.installGuideModal.classList.add('open'));
+      els.installGuideModal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
     }
+    function closeInstallGuide() {
+      if (!els.installGuideModal) return;
+      els.installGuideModal.classList.remove('open');
+      els.installGuideModal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      setTimeout(() => {
+        if (!els.installGuideModal.classList.contains('open')) els.installGuideModal.classList.add('hidden');
+      }, 220);
+    }
+    els.openInstallGuideBtn?.addEventListener('click', openInstallGuide);
+    els.closeInstallGuideBtn?.addEventListener('click', closeInstallGuide);
+    els.installGuideModal?.addEventListener('click', e => { if (e.target?.hasAttribute('data-close-install-guide')) closeInstallGuide(); });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape' && els.installGuideModal && !els.installGuideModal.classList.contains('hidden')) closeInstallGuide(); });
 
     function toast(message) {
       els.toast.textContent = message;
