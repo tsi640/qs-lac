@@ -204,11 +204,24 @@
     }
     .field-cell.completed { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--green) 78%, transparent); }
     .field-cell.not-completed { filter:saturate(.82); }
+    /* Fertig + QS i. O.: ganze Zelle deutlich grün hervorheben, Formatfarbe bleibt noch erkennbar. */
+    .field-cell.approved-state {
+      background:color-mix(in srgb, var(--cell-bg) 48%, var(--green) 52%);
+      box-shadow:inset 0 0 0 4px color-mix(in srgb, var(--green) 92%, #0a5), inset 0 0 18px color-mix(in srgb, var(--green) 22%, transparent);
+      filter:saturate(1.08) brightness(1.02);
+    }
+    .field-cell.approved-state .field-code { font-weight:900; }
+    /* Nachprüfung: Pritz-Fertig-Haken und Rahmen werden bewusst neutral grau. */
+    .field-cell.recheck-state {
+      box-shadow:inset 0 0 0 3px rgba(142,142,147,.92);
+      background:color-mix(in srgb, var(--cell-bg) 78%, #8e8e93 22%);
+    }
+    .field-cell.recheck-state .completion-badge { background:#8e8e93; }
     .qs-badge { position:absolute; top:3px; left:3px; width:15px; height:15px; border-radius:5px; display:grid; place-items:center; color:white; font-size:7px; border:1px solid rgba(255,255,255,.92); box-shadow:0 1px 3px rgba(0,0,0,.18); z-index:3; }
     .qs-ok { background:var(--green); }
     .qs-note { background:var(--yellow); }
     .qs-defect { background:var(--red); }
-    .qs-recheck { background:var(--blue); }
+    .qs-recheck { background:#8e8e93; }
     .qs-unchecked { background:var(--muted); }
     .defect-marker { position:absolute; right:4px; bottom:4px; width:8px; height:8px; border-radius:50%; background:var(--red); border:1px solid white; box-shadow:0 1px 2px rgba(0,0,0,.22); z-index:4; }
     .problem-marker { position:absolute; left:3px; bottom:2px; color:var(--red); font-size:13px; line-height:1; z-index:4; filter:drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
@@ -816,6 +829,19 @@
     const PRITZ_PROBLEM_PREFIX = '[PRITZ-PROBLEM]';
     function isPritzProblem(entry) { return String(entry?.description || '').startsWith(PRITZ_PROBLEM_PREFIX); }
     function entryDescription(entry) { return isPritzProblem(entry) ? String(entry.description || '').slice(PRITZ_PROBLEM_PREFIX.length).trim() : String(entry?.description || ''); }
+    function projectDayKey(value) {
+      if(!value) return '';
+      try {
+        return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));
+      } catch {
+        const d=new Date(value);
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }
+    }
+    function canDeleteEntry(entry) {
+      if(!entry || !state.session?.user?.id || entry.created_by !== state.session.user.id || projectDayKey(entry.created_at)!==projectDayKey(new Date())) return false;
+      return isPritzProblem(entry) ? !isQS() : isQS();
+    }
     function fieldProgress(id) { return state.progress.get(id) || {completed:false}; }
     function fieldQS(id) { return state.qs.get(id) || {status:'unchecked',note:''}; }
     function openDefectsForField(id) { return state.defects.filter(d => d.field_id === id && d.status === 'open' && !isPritzProblem(d)); }
@@ -1206,6 +1232,8 @@
           const classes=['field-cell'];
           if(isVoid) classes.push('void'); if(isModel) classes.push('model'); if(narrow) classes.push('narrow');
           if(!isVoid) classes.push(p.completed?'completed':'not-completed');
+          if(!isVoid && p.completed && q.status==='ok' && defs.length===0) classes.push('approved-state');
+          if(!isVoid && q.status==='recheck') classes.push('recheck-state');
           if(state.multiSelected.has(fieldId)) classes.push('multi-selected');
           if(doorLeft) classes.push('door-zone-left'); if(doorRight) classes.push('door-zone-right');
           const opacity = pass ? 1 : .14;
@@ -1342,12 +1370,17 @@
         els.sheet.querySelectorAll('[data-close-defect]').forEach(b=>b.addEventListener('click',()=>closeDefect(Number(b.dataset.closeDefect))));
         els.sheet.querySelectorAll('[data-reopen-defect]').forEach(b=>b.addEventListener('click',()=>reopenDefect(Number(b.dataset.reopenDefect))));
       }
+      els.sheet.querySelectorAll('[data-delete-entry]').forEach(b=>b.addEventListener('click',()=>deleteEntry(Number(b.dataset.deleteEntry))));
     }
 
     function defectSheetHtml(d, readOnly=false) {
       const problem=isPritzProblem(d);
-      const action = readOnly ? '' : (d.status==='open'?`<button type="button" class="btn small" data-close-defect="${d.id}">${problem?'Erledigt':'Schließen'}</button>`:`<button type="button" class="btn small ghost" data-reopen-defect="${d.id}">Wieder öffnen</button>`);
-      return `<div class="defect-card" style="margin-bottom:8px"><div class="defect-head"><div><div class="defect-id" style="${problem?'color:var(--red)':''}">${problem?'<i class="fa-solid fa-triangle-exclamation"></i> Pritz':'M-'+String(d.id).padStart(3,'0')}</div><div class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</div></div>${action}</div><div class="defect-text">${esc(entryDescription(d))}</div><div class="defect-meta">angelegt ${fmtDate(d.created_at)}${d.closed_at?` · geschlossen ${fmtDate(d.closed_at)}`:''}</div></div>`;
+      const deleteAllowed=canDeleteEntry(d);
+      const lifecycleAction = readOnly ? '' : (d.status==='open'?`<button type="button" class="btn small" data-close-defect="${d.id}">${problem?'Erledigt':'Schließen'}</button>`:`<button type="button" class="btn small ghost" data-reopen-defect="${d.id}">Wieder öffnen</button>`);
+      const deleteAction = deleteAllowed ? `<button type="button" class="btn small red" data-delete-entry="${d.id}"><i class="fa-solid fa-trash"></i> Löschen</button>` : '';
+      const action = (lifecycleAction || deleteAction) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${lifecycleAction}${deleteAction}</div>` : '';
+      const permanence = deleteAllowed ? ' · heute noch löschbar' : ' · dauerhaft dokumentiert';
+      return `<div class="defect-card" style="margin-bottom:8px"><div class="defect-head"><div><div class="defect-id" style="${problem?'color:var(--red)':''}">${problem?'<i class="fa-solid fa-triangle-exclamation"></i> Pritz':'M-'+String(d.id).padStart(3,'0')}</div><div class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</div></div>${action}</div><div class="defect-text">${esc(entryDescription(d))}</div><div class="defect-meta">angelegt ${fmtDate(d.created_at)}${d.closed_at?` · geschlossen ${fmtDate(d.closed_at)}`:''}${permanence}</div></div>`;
     }
 
     async function setProgress(fieldId, completed) {
@@ -1421,6 +1454,31 @@
       state.defects.unshift(data); toast('Problem an SGS gemeldet'); closeSheet(); renderAll();
     }
 
+    async function deleteEntry(id) {
+      const entry=state.defects.find(d=>d.id===id);
+      if(!entry) return;
+      if(!canDeleteEntry(entry)) { toast('Dieser Eintrag kann nicht mehr gelöscht werden'); return; }
+      const problem=isPritzProblem(entry);
+      const ok=window.confirm(problem ? 'Diese Pritz-Meldung wirklich löschen? Das ist nur am Tag der Erstellung möglich.' : 'Diesen Mangel wirklich löschen? Das ist nur am Tag der Erstellung möglich.');
+      if(!ok) return;
+      const {error}=await supabase.from('defects').delete().eq('id',id);
+      if(error){toast('Löschen nicht möglich – Supabase-Rechte prüfen');return;}
+      state.defects=state.defects.filter(d=>d.id!==id);
+
+      if(!problem) {
+        const remainingOpen=state.defects.some(d=>d.field_id===entry.field_id && !isPritzProblem(d) && d.status==='open');
+        const q=fieldQS(entry.field_id);
+        if(!remainingOpen && q.status==='defect') {
+          const payload={field_id:entry.field_id,status:'unchecked',note:q.note||'',checked_at:null,checked_by:state.session.user.id,updated_at:new Date().toISOString()};
+          const r=await supabase.from('qs_records').upsert(payload,{onConflict:'field_id'}).select().single();
+          if(!r.error) state.qs.set(entry.field_id,r.data);
+        }
+      }
+      toast(problem?'Pritz-Meldung gelöscht':'Mangel gelöscht');
+      renderAll();
+      if(state.selectedFieldId) renderFieldSheet();
+    }
+
     async function closeDefect(id) {
       const old=state.defects.find(d=>d.id===id); const problem=isPritzProblem(old);
       const now=new Date().toISOString();
@@ -1442,7 +1500,8 @@
       const openProblems=problems.filter(d=>d.status==='open'), closedProblems=problems.filter(d=>d.status==='closed');
       const makeCard=(d,problem=false)=>{
         const f=FIELD_MAP[d.field_id]; const facade=f?FACADE_MAP[f.facade_id]:null;
-        return `<div class="defect-card"><div class="defect-head"><div><div class="defect-id">${problem?'<i class="fa-solid fa-triangle-exclamation"></i> Pritz-Problem':'M-'+String(d.id).padStart(3,'0')}</div><div class="defect-title">${facade?esc(facade.title):'Fassade'} · ${f?esc(f.floor):''} · Feld ${f?String(f.col_no).padStart(2,'0'):''}</div></div><span class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</span></div><div class="defect-text">${esc(entryDescription(d))}</div><div class="defect-meta">${fmtDate(d.created_at)}</div><div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn small primary" data-jump-field="${d.field_id}">Feld öffnen</button>${isQS() && d.status==='open'?`<button type="button" class="btn small" data-close-list="${d.id}">${problem?'Erledigt':'Schließen'}</button>`:''}</div></div>`;
+        const deleteAllowed=canDeleteEntry(d);
+        return `<div class="defect-card"><div class="defect-head"><div><div class="defect-id">${problem?'<i class="fa-solid fa-triangle-exclamation"></i> Pritz-Problem':'M-'+String(d.id).padStart(3,'0')}</div><div class="defect-title">${facade?esc(facade.title):'Fassade'} · ${f?esc(f.floor):''} · Feld ${f?String(f.col_no).padStart(2,'0'):''}</div></div><span class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</span></div><div class="defect-text">${esc(entryDescription(d))}</div><div class="defect-meta">${fmtDate(d.created_at)}${deleteAllowed?' · heute noch löschbar':' · dauerhaft dokumentiert'}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn small primary" data-jump-field="${d.field_id}">Feld öffnen</button>${isQS() && d.status==='open'?`<button type="button" class="btn small" data-close-list="${d.id}">${problem?'Erledigt':'Schließen'}</button>`:''}${deleteAllowed?`<button type="button" class="btn small red" data-delete-list="${d.id}"><i class="fa-solid fa-trash"></i> Löschen</button>`:''}</div></div>`;
       };
       els.pageDefects.innerHTML=`<h1 class="page-title">Mängel & Probleme</h1><p class="page-sub">${isQS()?'Mängelverwaltung SGS-QS und Meldungen von Pritz':'Von SGS-QS gemeldete Mängel und eigene Problemmeldungen'}</p><div class="stats"><div class="card stat"><div class="stat-value">${open.length}</div><div class="stat-label">offene Mängel</div></div><div class="card stat"><div class="stat-value">${openProblems.length}</div><div class="stat-label">offene Pritz-Probleme</div></div></div>
         <div class="section-title">Probleme / Hinweise von Pritz</div><div class="defect-list">${openProblems.length?openProblems.map(d=>makeCard(d,true)).join(''):'<div class="card empty">Keine offenen Pritz-Meldungen.</div>'}</div>
@@ -1450,6 +1509,7 @@
         ${closed.length||closedProblems.length?`<div class="section-title">Geschlossen / erledigt</div><div class="defect-list">${[...closedProblems.slice(0,15).map(d=>makeCard(d,true)),...closed.slice(0,30).map(d=>makeCard(d,false))].join('')}</div>`:''}`;
       els.pageDefects.querySelectorAll('[data-jump-field]').forEach(b=>b.addEventListener('click',()=>{ const field=FIELD_MAP[b.dataset.jumpField]; if(field){state.facadeId=field.facade_id;state.page='facades';state.multiSelect=true;state.multiSelected.clear();localStorage.setItem('lac.facade',state.facadeId);localStorage.setItem('lac.page','facades');renderAll();setTimeout(()=>openFieldSheet(field.id),50);} }));
       els.pageDefects.querySelectorAll('[data-close-list]').forEach(b=>b.addEventListener('click',()=>closeDefect(Number(b.dataset.closeList))));
+      els.pageDefects.querySelectorAll('[data-delete-list]').forEach(b=>b.addEventListener('click',()=>deleteEntry(Number(b.dataset.deleteList))));
     }
 
     window.addEventListener('online',()=>setNetwork(true,'Netzwerk verfügbar'));
