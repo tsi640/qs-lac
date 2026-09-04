@@ -17,7 +17,7 @@
   <link rel="shortcut icon" type="image/png" href="./apple-touch-icon.png?v=4">
   <link rel="icon" type="image/png" sizes="192x192" href="./android-chrome-192x192.png?v=1">
   <link rel="icon" type="image/png" sizes="512x512" href="./android-chrome-512x512.png?v=1">
-  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22LAC%20Fassaden-QS%22%2C%22short_name%22%3A%22LAC%20QS%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%2F%22%2C%22background_color%22%3A%22%23f5f5f7%22%2C%22theme_color%22%3A%22%230d0d0f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22.%2Fandroid-chrome-192x192.png%3Fv%3D1%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22.%2Fandroid-chrome-512x512.png%3Fv%3D1%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+  <link rel="manifest" href="./manifest.webmanifest?v=2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     :root {
@@ -183,7 +183,7 @@
     .field-cell {
       position:relative; border:0; border-right:1px solid var(--border-strong); border-bottom:1px solid var(--border-strong);
       padding:0; min-width:0; overflow:hidden; cursor:pointer; color:#101013;
-      background:var(--cell-bg); transform:translateZ(0);
+      background:var(--cell-bg); transform:translateZ(0); -webkit-touch-callout:none; touch-action:pan-x pan-y;
     }
     @media (prefers-color-scheme: dark) { .field-cell { color:#f6f6f7; } }
     .field-cell:first-of-type { border-left:1px solid var(--border-strong); }
@@ -218,9 +218,12 @@
     .field-cell.narrow .defect-marker { width:6px; height:6px; right:2px; bottom:2px; }
     .field-cell.narrow .problem-marker { font-size:9px; left:2px; bottom:1px; }
     .field-cell.multi-selected { box-shadow: inset 0 0 0 3px var(--blue) !important; z-index:5; }
+    .field-cell.long-press-active { filter:brightness(.92); }
     .field-cell.multi-selected::after { content:'✓'; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-size:18px; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,.65); background:color-mix(in srgb, var(--blue) 22%, transparent); pointer-events:none; }
     .multi-actionbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; padding:10px 11px; margin:0 0 10px; border:1px solid color-mix(in srgb,var(--blue) 35%,var(--border)); border-radius:14px; background:color-mix(in srgb,var(--blue) 7%,var(--surface-solid)); }
     .multi-actionbar strong { font-size:13px; }
+    .multi-action-copy { min-width:0; }
+    .multi-help { margin-top:2px; color:var(--muted); font-size:11px; line-height:1.3; }
     .multi-actions { display:flex; flex-wrap:wrap; gap:6px; }
     .floor-band { position:absolute; inset:0; pointer-events:none; }
     .zoom-control { display:flex; align-items:center; gap:6px; }
@@ -244,9 +247,17 @@
       transform:translateY(105%); transition:transform .24s ease;
       background:var(--surface-solid); border-radius:22px 22px 0 0; box-shadow:var(--shadow);
       padding:8px 14px calc(18px + var(--safe-bottom));
+      will-change:transform;
     }
-    .sheet.open { transform:translateY(0); }
-    .sheet-handle { width:38px; height:5px; border-radius:999px; background:var(--border-strong); opacity:.35; margin:3px auto 10px; }
+    .sheet.open { transform:translateY(var(--sheet-drag-y, 0px)); }
+    .sheet.dragging { transition:none !important; }
+    .sheet-handle {
+      position:sticky; top:-8px; z-index:6; width:100%; height:36px; margin:-8px 0 2px;
+      display:grid; place-items:center; background:linear-gradient(to bottom,var(--surface-solid) 76%,transparent);
+      touch-action:none; cursor:grab; -webkit-touch-callout:none;
+    }
+    .sheet-handle::after { content:''; width:38px; height:5px; border-radius:999px; background:var(--border-strong); opacity:.38; }
+    .sheet-handle:active { cursor:grabbing; }
     .sheet-title { font-size:20px; font-weight:780; letter-spacing:-.03em; margin:0; }
     .sheet-sub { color:var(--muted); font-size:13px; margin:3px 0 14px; }
     .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0 14px; }
@@ -313,6 +324,7 @@
     .guide-step-text { margin-top:3px; color:var(--muted); font-size:12px; line-height:1.45; }
     .guide-inline-icons { display:inline-flex; gap:6px; align-items:center; margin:0 2px; }
     .guide-note { margin-top:12px; border-radius:14px; padding:10px 11px; font-size:12px; line-height:1.45; background:color-mix(in srgb, var(--yellow) 10%, var(--surface-solid)); border:1px solid color-mix(in srgb, var(--yellow) 38%, var(--border)); }
+    .android-install-direct { width:100%; margin:0 0 12px; min-height:48px; border:0; border-radius:14px; background:var(--blue); color:white; font-weight:780; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
     body.modal-open { overflow:hidden; }
     .toast { position:fixed; z-index:120; left:50%; bottom:calc(88px + var(--safe-bottom)); transform:translate(-50%,20px); opacity:0; pointer-events:none; background:#111; color:#fff; border-radius:999px; padding:10px 14px; font-size:12px; font-weight:650; transition:.2s ease; white-space:nowrap; max-width:90vw; overflow:hidden; text-overflow:ellipsis; }
     .toast.show { opacity:1; transform:translate(-50%,0); }
@@ -326,7 +338,7 @@
       .content { padding-left:20px; padding-right:20px; }
       .bottom-nav { left:50%; right:auto; transform:translateX(-50%); width:520px; border:1px solid var(--border); border-bottom:0; border-radius:18px 18px 0 0; }
       .sheet { left:50%; right:auto; width:min(620px,100%); transform:translate(-50%,105%); }
-      .sheet.open { transform:translate(-50%,0); }
+      .sheet.open { transform:translate(-50%, var(--sheet-drag-y, 0px)); }
     }
     @media (max-width:380px) {
       :root { --cell-h:76px; }
@@ -433,26 +445,19 @@
             <div class="guide-step">
               <div class="guide-step-badge">1</div>
               <div class="guide-step-card">
-                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-brands fa-safari"></i></span>Die Website in Safari öffnen</div>
-                <div class="guide-step-text">Falls der Link in WhatsApp, Mail oder einem anderen Browser geöffnet wurde: unten oder oben auf <strong>Teilen</strong> tippen und dann <strong>in Safari öffnen</strong> wählen.</div>
-              </div>
-            </div>
-            <div class="guide-step">
-              <div class="guide-step-badge">2</div>
-              <div class="guide-step-card">
                 <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-arrow-up-from-bracket"></i></span>Auf „Teilen“ tippen</div>
                 <div class="guide-step-text">In Safari unten mittig auf das <strong>Teilen-Symbol</strong> tippen. Das ist das Kästchen mit dem Pfeil nach oben.</div>
               </div>
             </div>
             <div class="guide-step">
-              <div class="guide-step-badge">3</div>
+              <div class="guide-step-badge">2</div>
               <div class="guide-step-card">
                 <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-plus"></i><i class="fa-solid fa-mobile-screen"></i></span>„Zum Home-Bildschirm“ auswählen</div>
                 <div class="guide-step-text">In der Liste etwas nach unten scrollen und den Eintrag <strong>„Zum Home-Bildschirm“</strong> antippen.</div>
               </div>
             </div>
             <div class="guide-step">
-              <div class="guide-step-badge">4</div>
+              <div class="guide-step-badge">3</div>
               <div class="guide-step-card">
                 <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-check"></i></span>Mit „Hinzufügen“ bestätigen</div>
                 <div class="guide-step-text">Den vorgeschlagenen Namen so lassen oder anpassen und oben rechts auf <strong>„Hinzufügen“</strong> tippen. Danach erscheint die App als Symbol auf dem Home-Bildschirm.</div>
@@ -469,30 +474,24 @@
               <p class="guide-section-sub">Am besten in Google Chrome öffnen. Je nach Handy heißt der Menüpunkt leicht unterschiedlich.</p>
             </div>
           </div>
+          <button id="androidInstallBtn" type="button" class="android-install-direct hidden"><i class="fa-solid fa-download"></i> App jetzt installieren</button>
           <div class="guide-steps">
             <div class="guide-step">
               <div class="guide-step-badge">1</div>
-              <div class="guide-step-card">
-                <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-brands fa-chrome"></i></span>Die Website in Chrome öffnen</div>
-                <div class="guide-step-text">Wenn der Link in einer anderen App geöffnet wurde, den Browser <strong>Chrome</strong> verwenden. Auf Google-Pixel-Handys ist Chrome in der Regel schon vorhanden.</div>
-              </div>
-            </div>
-            <div class="guide-step">
-              <div class="guide-step-badge">2</div>
               <div class="guide-step-card">
                 <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-ellipsis-vertical"></i></span>Oben rechts auf das Menü tippen</div>
                 <div class="guide-step-text">In Chrome oben rechts auf die <strong>drei Punkte</strong> tippen. Dadurch öffnet sich das Hauptmenü.</div>
               </div>
             </div>
             <div class="guide-step">
-              <div class="guide-step-badge">3</div>
+              <div class="guide-step-badge">2</div>
               <div class="guide-step-card">
                 <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-house"></i><i class="fa-solid fa-download"></i></span>„Zum Startbildschirm hinzufügen“ oder „App installieren“ wählen</div>
                 <div class="guide-step-text">Je nach Android-Handy steht dort entweder <strong>„Zum Startbildschirm hinzufügen“</strong>, <strong>„Zum Home-Bildschirm hinzufügen“</strong> oder <strong>„App installieren“</strong>. Einen dieser Einträge antippen.</div>
               </div>
             </div>
             <div class="guide-step">
-              <div class="guide-step-badge">4</div>
+              <div class="guide-step-badge">3</div>
               <div class="guide-step-card">
                 <div class="guide-step-title"><span class="guide-inline-icons"><i class="fa-solid fa-check"></i></span>Mit „Hinzufügen“ oder „Installieren“ bestätigen</div>
                 <div class="guide-step-text">Den Vorschlag bestätigen. Danach erscheint die App als eigenes Symbol auf dem Startbildschirm und kann direkt dort geöffnet werden.</div>
@@ -720,7 +719,8 @@
       networkLine: document.getElementById('networkLine'), globalBanner: document.getElementById('globalBanner'),
       backdrop: document.getElementById('sheetBackdrop'), sheet: document.getElementById('fieldSheet'), toast: document.getElementById('toast'),
       installGuideEntry: document.getElementById('installGuideEntry'), openInstallGuideBtn: document.getElementById('openInstallGuideBtn'),
-      installGuideModal: document.getElementById('installGuideModal'), closeInstallGuideBtn: document.getElementById('closeInstallGuideBtn')
+      installGuideModal: document.getElementById('installGuideModal'), closeInstallGuideBtn: document.getElementById('closeInstallGuideBtn'),
+      androidInstallBtn: document.getElementById('androidInstallBtn')
     };
     const state = {
       accountName: localStorage.getItem('lac.account') || 'SGS-QS',
@@ -733,7 +733,7 @@
       facadeId: localStorage.getItem('lac.facade') || 'F01_S',
       filter: localStorage.getItem('lac.filter') || 'all',
       floorFilter: 'all',
-      multiSelect: false,
+      multiSelect: true,
       multiSelected: new Set(),
       zoom: Number(localStorage.getItem('lac.zoom') || '1'),
       selectedFieldId: null,
@@ -778,6 +778,26 @@
     els.closeInstallGuideBtn?.addEventListener('click', closeInstallGuide);
     els.installGuideModal?.addEventListener('click', e => { if (e.target?.hasAttribute('data-close-install-guide')) closeInstallGuide(); });
     window.addEventListener('keydown', e => { if (e.key === 'Escape' && els.installGuideModal && !els.installGuideModal.classList.contains('hidden')) closeInstallGuide(); });
+
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      els.androidInstallBtn?.classList.remove('hidden');
+    });
+    els.androidInstallBtn?.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      try { await deferredInstallPrompt.userChoice; } catch {}
+      deferredInstallPrompt = null;
+      els.androidInstallBtn.classList.add('hidden');
+    });
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      els.androidInstallBtn?.classList.add('hidden');
+      els.installGuideEntry?.classList.add('hidden');
+      closeInstallGuide();
+    });
 
     function toast(message) {
       els.toast.textContent = message;
@@ -1025,7 +1045,7 @@
     function openFacade(id) {
       state.facadeId = id;
       state.page = 'facades';
-      state.multiSelect = false;
+      state.multiSelect = true;
       state.multiSelected.clear();
       localStorage.setItem('lac.facade',id); localStorage.setItem('lac.page','facades');
       renderAll();
@@ -1033,22 +1053,20 @@
 
     function renderFacades() {
       const f = FACADE_MAP[state.facadeId] || FACADE_DEFS[0];
-      if (isQS()) { state.multiSelect = false; state.multiSelected.clear(); }
+      state.multiSelect = true;
       const filters = isQS() ? [
         ['all','Alle'],['open','Nicht fertig'],['done','Fertig'],['done-unchecked','Fertig · ungeprüft'],['defects','Mit offenem Mangel'],['problems','Pritz-Problem']
       ] : [
         ['all','Alle'],['open','Nicht fertig'],['done','Fertig'],['qs-ok','QS i. O.'],['defects','Mangel'],['recheck','Nachprüfung'],['problems','Problem gemeldet']
       ];
       const zoomPct = Math.round(state.zoom*100);
-      const multiControls = !isQS() ? `<button id="multiToggle" type="button" class="btn small ${state.multiSelect?'primary':''}"><i class="fa-solid fa-check-double"></i> ${state.multiSelect?'Mehrfachauswahl aktiv':'Mehrfachauswahl'}</button>` : '';
-      const multiBar = !isQS() && state.multiSelect ? `<div class="multi-actionbar"><strong id="multiCount">${state.multiSelected.size} Felder ausgewählt</strong><div class="multi-actions"><button id="multiAll" type="button" class="btn small ghost">Sichtbare wählen</button><button id="multiDone" type="button" class="btn small green" ${state.multiSelected.size?'':'disabled'}><i class="fa-solid fa-check"></i> Als fertig melden</button><button id="multiCancel" type="button" class="btn small">Abbrechen</button></div></div>` : '';
+      const multiBar = `<div class="multi-actionbar"><div class="multi-action-copy"><strong id="multiCount">${state.multiSelected.size} Felder ausgewählt</strong><div class="multi-help">Kurz tippen = auswählen · ca. 0,4 s gedrückt halten = Details öffnen</div></div><div class="multi-actions">${isQS()?`<button id="multiQsOk" type="button" class="btn small green" ${state.multiSelected.size?'':'disabled'}><i class="fa-solid fa-check"></i> QS i. O.</button><button id="multiRecheck" type="button" class="btn small primary" ${state.multiSelected.size?'':'disabled'}><i class="fa-solid fa-rotate"></i> Nachprüfung</button>`:`<button id="multiDone" type="button" class="btn small green" ${state.multiSelected.size?'':'disabled'}><i class="fa-solid fa-check"></i> Fertig</button><button id="multiOpen" type="button" class="btn small ghost" ${state.multiSelected.size?'':'disabled'}><i class="fa-solid fa-rotate-left"></i> Nicht fertig</button>`}<button id="multiClear" type="button" class="btn small" ${state.multiSelected.size?'':'disabled'}>Auswahl leeren</button></div></div>`;
 
       els.pageFacades.innerHTML = `
         <div class="facade-head"><div><h2>${esc(f.title)}</h2><p>${f.group} · Geschosse sind links fest eingeblendet</p></div></div>
         <div class="toolbar">
           <select id="facadeSelect" class="select" aria-label="Fassade auswählen">${FACADE_DEFS.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.title)}</option>`).join('')}</select>
           <div class="segmented" id="filterSegment">${filters.map(([v,l])=>`<button type="button" data-filter="${v}" class="${state.filter===v?'active':''}">${l}</button>`).join('')}</div>
-          ${multiControls}
           <div class="zoom-control"><button id="zoomOut" type="button" class="btn small">−</button><span class="zoom-value">${zoomPct}%</span><button id="zoomIn" type="button" class="btn small">+</button></div>
         </div>
         ${multiBar}
@@ -1056,21 +1074,23 @@
         <div class="legend">${legendHtml()}</div>`;
 
       document.getElementById('facadeSelect').addEventListener('change', e => {
-        state.facadeId=e.target.value; state.multiSelect=false; state.multiSelected.clear(); localStorage.setItem('lac.facade',state.facadeId); renderFacades();
+        state.facadeId=e.target.value; state.multiSelect=true; state.multiSelected.clear(); localStorage.setItem('lac.facade',state.facadeId); renderFacades();
       });
       document.getElementById('filterSegment').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
         state.filter=b.dataset.filter; state.multiSelected.clear(); localStorage.setItem('lac.filter',state.filter); renderFacades();
       }));
       document.getElementById('zoomOut').addEventListener('click',()=>setZoom(state.zoom-.1));
       document.getElementById('zoomIn').addEventListener('click',()=>setZoom(state.zoom+.1));
-      const multiToggle=document.getElementById('multiToggle');
-      if(multiToggle) multiToggle.addEventListener('click',()=>{ state.multiSelect=!state.multiSelect; state.multiSelected.clear(); renderFacades(); });
-      const multiAll=document.getElementById('multiAll');
-      if(multiAll) multiAll.addEventListener('click',selectVisibleFields);
       const multiDone=document.getElementById('multiDone');
       if(multiDone) multiDone.addEventListener('click',()=>setProgressBatch([...state.multiSelected],true));
-      const multiCancel=document.getElementById('multiCancel');
-      if(multiCancel) multiCancel.addEventListener('click',()=>{ state.multiSelect=false; state.multiSelected.clear(); renderFacades(); });
+      const multiOpen=document.getElementById('multiOpen');
+      if(multiOpen) multiOpen.addEventListener('click',()=>setProgressBatch([...state.multiSelected],false));
+      const multiQsOk=document.getElementById('multiQsOk');
+      if(multiQsOk) multiQsOk.addEventListener('click',()=>setQSBatch([...state.multiSelected],'ok'));
+      const multiRecheck=document.getElementById('multiRecheck');
+      if(multiRecheck) multiRecheck.addEventListener('click',()=>setQSBatch([...state.multiSelected],'recheck'));
+      const multiClear=document.getElementById('multiClear');
+      if(multiClear) multiClear.addEventListener('click',()=>{ state.multiSelected.clear(); renderFacadeGrid(); });
       renderFacadeGrid();
     }
 
@@ -1116,21 +1136,51 @@
       updateMultiCount();
     }
 
-    function updateMultiCount() {
-      const count=document.getElementById('multiCount');
-      const done=document.getElementById('multiDone');
-      if(count) count.textContent=`${state.multiSelected.size} Felder ausgewählt`;
-      if(done) done.disabled=state.multiSelected.size===0;
+    const LONG_PRESS_MS = 400;
+    const LONG_PRESS_SLOP_PX = 12;
+    function bindFieldGesture(button) {
+      let timer=null, pointerId=null, startX=0, startY=0, moved=false, longTriggered=false;
+      const clearTimer=()=>{ if(timer){ clearTimeout(timer); timer=null; } };
+      const reset=()=>{ clearTimer(); button.classList.remove('long-press-active'); pointerId=null; };
+      button.addEventListener('contextmenu', e=>e.preventDefault());
+      button.addEventListener('click', e=>e.preventDefault());
+      button.addEventListener('pointerdown', e=>{
+        if(e.pointerType==='mouse' && e.button!==0) return;
+        pointerId=e.pointerId; startX=e.clientX; startY=e.clientY; moved=false; longTriggered=false;
+        button.classList.add('long-press-active');
+        timer=setTimeout(()=>{
+          timer=null; longTriggered=true; button.classList.remove('long-press-active');
+          if(navigator.vibrate) { try { navigator.vibrate(8); } catch {} }
+          openFieldSheet(button.dataset.fieldId);
+        },LONG_PRESS_MS);
+      });
+      button.addEventListener('pointermove', e=>{
+        if(pointerId!==e.pointerId) return;
+        const dx=e.clientX-startX, dy=e.clientY-startY;
+        if(Math.hypot(dx,dy)>LONG_PRESS_SLOP_PX){ moved=true; clearTimer(); button.classList.remove('long-press-active'); }
+      });
+      button.addEventListener('pointerup', e=>{
+        if(pointerId!==e.pointerId) return;
+        clearTimer(); button.classList.remove('long-press-active');
+        if(!longTriggered && !moved){
+          const field=FIELD_MAP[button.dataset.fieldId];
+          if(field && fieldPassesFilter(field)) toggleMultiField(field.id,button);
+        }
+        pointerId=null;
+      });
+      button.addEventListener('pointercancel', reset);
+      button.addEventListener('lostpointercapture', ()=>{ if(pointerId!==null && !longTriggered) reset(); });
+      button.addEventListener('keydown', e=>{
+        if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleMultiField(button.dataset.fieldId,button); }
+      });
     }
 
-    function selectVisibleFields() {
-      const grid=document.getElementById('facadeGrid');
-      if(!grid) return;
-      grid.querySelectorAll('[data-field-id]:not(:disabled)').forEach(btn=>{
-        const field=FIELD_MAP[btn.dataset.fieldId];
-        if(field && fieldPassesFilter(field)) { state.multiSelected.add(field.id); btn.classList.add('multi-selected'); }
+    function updateMultiCount() {
+      const count=document.getElementById('multiCount');
+      if(count) count.textContent=`${state.multiSelected.size} Felder ausgewählt`;
+      ['multiDone','multiOpen','multiQsOk','multiRecheck','multiClear'].forEach(id=>{
+        const btn=document.getElementById(id); if(btn) btn.disabled=state.multiSelected.size===0;
       });
-      updateMultiCount();
     }
 
     function renderFacadeGrid() {
@@ -1170,9 +1220,7 @@
         });
       });
       grid.innerHTML = html;
-      grid.querySelectorAll('[data-field-id]:not(:disabled)').forEach(b => b.addEventListener('click',()=>{
-        if(state.multiSelect && !isQS()) toggleMultiField(b.dataset.fieldId,b); else openFieldSheet(b.dataset.fieldId);
-      }));
+      grid.querySelectorAll('[data-field-id]:not(:disabled)').forEach(bindFieldGesture);
       updateMultiCount();
     }
 
@@ -1186,11 +1234,45 @@
 
     function openFieldSheet(fieldId) {
       state.selectedFieldId = fieldId;
+      els.sheet.style.removeProperty('--sheet-drag-y');
       renderFieldSheet();
       els.backdrop.classList.add('open'); els.sheet.classList.add('open');
     }
-    function closeSheet() { els.backdrop.classList.remove('open'); els.sheet.classList.remove('open'); state.selectedFieldId=null; }
+    function closeSheet() {
+      els.sheet.classList.remove('dragging');
+      els.sheet.style.removeProperty('--sheet-drag-y');
+      els.backdrop.classList.remove('open'); els.sheet.classList.remove('open'); state.selectedFieldId=null;
+    }
     els.backdrop.addEventListener('click',closeSheet);
+
+    function bindSheetSwipe() {
+      const handle=els.sheet.querySelector('.sheet-handle'); if(!handle) return;
+      let active=false, pointerId=null, startY=0, lastY=0, lastT=0, velocity=0;
+      const finish=e=>{
+        if(!active || (e && pointerId!==e.pointerId)) return;
+        active=false;
+        try { if(pointerId!==null && handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId); } catch {}
+        const dy=Math.max(0,lastY-startY);
+        els.sheet.classList.remove('dragging');
+        if(dy>72 || velocity>0.55) closeSheet();
+        else { els.sheet.style.setProperty('--sheet-drag-y','0px'); setTimeout(()=>els.sheet.style.removeProperty('--sheet-drag-y'),240); }
+        pointerId=null;
+      };
+      handle.addEventListener('pointerdown',e=>{
+        if(e.pointerType==='mouse' && e.button!==0) return;
+        active=true; pointerId=e.pointerId; startY=lastY=e.clientY; lastT=performance.now(); velocity=0;
+        try { handle.setPointerCapture(pointerId); } catch {}
+        els.sheet.classList.add('dragging');
+      });
+      handle.addEventListener('pointermove',e=>{
+        if(!active || pointerId!==e.pointerId) return;
+        const now=performance.now(); const dy=Math.max(0,e.clientY-startY); const dt=Math.max(1,now-lastT);
+        velocity=Math.max(0,(e.clientY-lastY)/dt); lastY=e.clientY; lastT=now;
+        els.sheet.style.setProperty('--sheet-drag-y',`${dy}px`);
+      });
+      handle.addEventListener('pointerup',finish);
+      handle.addEventListener('pointercancel',finish);
+    }
 
     function renderFieldSheet() {
       const field=FIELD_MAP[state.selectedFieldId]; if(!field) return;
@@ -1244,6 +1326,7 @@
         ${roleContent}
         <button id="closeSheetBtn" type="button" class="btn ghost" style="width:100%;margin-top:14px">Schließen</button>`;
 
+      bindSheetSwipe();
       document.getElementById('closeSheetBtn').addEventListener('click',closeSheet);
       if(!isQS()) {
         document.getElementById('toggleProgressBtn').addEventListener('click',()=>setProgress(field.id,!p.completed));
@@ -1284,8 +1367,23 @@
       const {data,error}=await supabase.from('progress').upsert(payload,{onConflict:'field_id'}).select();
       if(error){toast('Mehrfachspeicherung fehlgeschlagen');return;}
       (data||[]).forEach(row=>state.progress.set(row.field_id,row));
-      toast(`${fieldIds.length} Felder als fertig gespeichert`);
-      state.multiSelected.clear(); state.multiSelect=false; renderAll();
+      toast(`${fieldIds.length} Felder auf „${completed?'Fertig':'Nicht fertig'}“ gesetzt`);
+      state.multiSelected.clear(); state.multiSelect=true; renderAll();
+    }
+
+    async function setQSBatch(fieldIds, status) {
+      if(!fieldIds.length || !isQS()) return;
+      if(!['ok','recheck'].includes(status)) return;
+      const now=new Date().toISOString();
+      const payload=fieldIds.map(fieldId=>{
+        const old=fieldQS(fieldId);
+        return {field_id:fieldId,status,note:old.note||'',checked_at:now,checked_by:state.session.user.id,updated_at:now};
+      });
+      const {data,error}=await supabase.from('qs_records').upsert(payload,{onConflict:'field_id'}).select();
+      if(error){toast('QS-Mehrfachspeicherung fehlgeschlagen');return;}
+      (data||[]).forEach(row=>state.qs.set(row.field_id,row));
+      toast(`${fieldIds.length} Felder auf „${status==='ok'?'QS i. O.':'Nachprüfung'}“ gesetzt`);
+      state.multiSelected.clear(); state.multiSelect=true; renderAll();
     }
 
     async function saveQS(fieldId) {
@@ -1350,7 +1448,7 @@
         <div class="section-title">Probleme / Hinweise von Pritz</div><div class="defect-list">${openProblems.length?openProblems.map(d=>makeCard(d,true)).join(''):'<div class="card empty">Keine offenen Pritz-Meldungen.</div>'}</div>
         <div class="section-title">Offene Mängel SGS</div><div class="defect-list">${open.length?open.map(d=>makeCard(d,false)).join(''):'<div class="card empty">Keine offenen Mängel.</div>'}</div>
         ${closed.length||closedProblems.length?`<div class="section-title">Geschlossen / erledigt</div><div class="defect-list">${[...closedProblems.slice(0,15).map(d=>makeCard(d,true)),...closed.slice(0,30).map(d=>makeCard(d,false))].join('')}</div>`:''}`;
-      els.pageDefects.querySelectorAll('[data-jump-field]').forEach(b=>b.addEventListener('click',()=>{ const field=FIELD_MAP[b.dataset.jumpField]; if(field){state.facadeId=field.facade_id;state.page='facades';state.multiSelect=false;state.multiSelected.clear();localStorage.setItem('lac.facade',state.facadeId);localStorage.setItem('lac.page','facades');renderAll();setTimeout(()=>openFieldSheet(field.id),50);} }));
+      els.pageDefects.querySelectorAll('[data-jump-field]').forEach(b=>b.addEventListener('click',()=>{ const field=FIELD_MAP[b.dataset.jumpField]; if(field){state.facadeId=field.facade_id;state.page='facades';state.multiSelect=true;state.multiSelected.clear();localStorage.setItem('lac.facade',state.facadeId);localStorage.setItem('lac.page','facades');renderAll();setTimeout(()=>openFieldSheet(field.id),50);} }));
       els.pageDefects.querySelectorAll('[data-close-list]').forEach(b=>b.addEventListener('click',()=>closeDefect(Number(b.dataset.closeList))));
     }
 
