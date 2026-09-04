@@ -8,9 +8,9 @@
   <meta name="apple-mobile-web-app-title" content="LAC QS">
   <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0d0d0f" media="(prefers-color-scheme: dark)">
-	<link rel="apple-touch-icon" href="apple-touch-icon.png">
-	<link rel="icon" type="image/png" href="apple-touch-icon.png">
   <title>LAC Fassaden-QS</title>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     :root {
@@ -96,7 +96,7 @@
       -webkit-backdrop-filter: blur(20px) saturate(180%);
     }
     .brand { min-width:0; display:flex; align-items:center; gap:10px; }
-    .brand-icon { width:38px; height:38px; display:grid; place-items:center; border-radius:12px; background:var(--text); color:var(--bg); }
+    .brand-icon { width:38px; height:38px; overflow:hidden; border-radius:12px; background:var(--surface-solid); box-shadow:0 2px 8px rgba(0,0,0,.10); }
     .brand-title { font-size:17px; font-weight:750; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .brand-sub { font-size:12px; color:var(--muted); margin-top:1px; }
     .top-actions { display:flex; align-items:center; gap:8px; }
@@ -167,21 +167,12 @@
     }
     @media (prefers-color-scheme: dark) { .field-cell { color:#f6f6f7; } }
     .field-cell:first-of-type { border-left:1px solid var(--border-strong); }
-    .field-cell.model {
-      background:
-        linear-gradient(34deg, transparent 48.5%, color-mix(in srgb, var(--muted) 45%, transparent) 49%, color-mix(in srgb, var(--muted) 45%, transparent) 51%, transparent 51.5%),
-        linear-gradient(-34deg, transparent 48.5%, color-mix(in srgb, var(--muted) 45%, transparent) 49%, color-mix(in srgb, var(--muted) 45%, transparent) 51%, transparent 51.5%),
-        var(--format-model);
-    }
+    .field-cell.model { background:var(--format-model); }
     .field-cell.void { background:transparent; cursor:default; border-color:transparent; }
-    .field-cell.void::before, .field-cell.void::after { content:""; position:absolute; left:8%; right:8%; top:50%; height:1px; background:var(--border); transform:rotate(24deg); }
-    .field-cell.void::after { transform:rotate(-24deg); }
     .field-inner { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start; padding:5px 4px; }
     .field-code { font-size:11px; font-weight:820; line-height:1; }
-    .field-dim { font-size:8px; line-height:1.15; margin-top:2px; opacity:.76; white-space:nowrap; }
-    .field-label { font-size:8px; line-height:1.1; margin-top:2px; opacity:.76; white-space:nowrap; }
+    .field-label { font-size:8px; line-height:1.1; margin-top:3px; opacity:.78; white-space:nowrap; }
     .field-cell.narrow .field-label { display:none; }
-    .field-cell.narrow .field-dim { font-size:7px; writing-mode:vertical-rl; transform:rotate(180deg); position:absolute; left:3px; bottom:4px; }
     .field-cell.narrow .field-code { position:absolute; top:5px; left:4px; }
     .field-cell.door-zone-left { border-left:4px solid #111 !important; }
     .field-cell.door-zone-right { border-right:4px solid #111 !important; }
@@ -200,6 +191,7 @@
     .qs-note { background:var(--yellow); }
     .qs-defect { background:var(--red); }
     .qs-recheck { background:var(--blue); }
+    .qs-unchecked { background:var(--muted); }
     .defect-marker { position:absolute; right:5px; bottom:5px; width:11px; height:11px; border-radius:50%; background:var(--red); border:2px solid white; box-shadow:0 1px 3px rgba(0,0,0,.25); }
     .floor-band { position:absolute; inset:0; pointer-events:none; }
     .zoom-control { display:flex; align-items:center; gap:6px; }
@@ -250,7 +242,8 @@
     .pill.closed { color:var(--green); }
     .login-wrap { min-height:100vh; padding:calc(28px + var(--safe-top)) 18px calc(28px + var(--safe-bottom)); display:flex; align-items:center; justify-content:center; }
     .login-card { width:min(430px,100%); background:var(--surface-solid); border:1px solid var(--border); border-radius:24px; box-shadow:var(--shadow); padding:20px; }
-    .login-mark { width:54px; height:54px; border-radius:17px; display:grid; place-items:center; background:var(--text); color:var(--bg); font-size:24px; margin-bottom:16px; }
+    .login-mark { width:64px; height:64px; border-radius:18px; overflow:hidden; margin-bottom:16px; box-shadow:0 4px 16px rgba(0,0,0,.12); }
+    .login-mark img, .brand-icon img { width:100%; height:100%; display:block; object-fit:cover; }
     .login-title { margin:0; font-size:28px; letter-spacing:-.04em; }
     .login-sub { color:var(--muted); font-size:14px; line-height:1.4; margin:7px 0 18px; }
     .account-switch { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
@@ -258,15 +251,12 @@
     .account-btn.active { border-color:var(--blue); box-shadow:inset 0 0 0 1px var(--blue); background:color-mix(in srgb, var(--blue) 10%, var(--surface-solid)); }
     .login-card .text-input { width:100%; }
     .login-error { min-height:18px; margin:8px 0 0; color:var(--red); font-size:12px; }
-    .setup-panel { margin-top:16px; border-top:1px solid var(--border); padding-top:14px; }
-    details summary { cursor:pointer; color:var(--blue); font-size:13px; font-weight:680; }
-    .setup-copy { width:100%; min-height:180px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; line-height:1.35; margin-top:10px; }
-    .setup-steps { color:var(--muted); font-size:12px; line-height:1.45; }
     .toast { position:fixed; z-index:120; left:50%; bottom:calc(88px + var(--safe-bottom)); transform:translate(-50%,20px); opacity:0; pointer-events:none; background:#111; color:#fff; border-radius:999px; padding:10px 14px; font-size:12px; font-weight:650; transition:.2s ease; white-space:nowrap; max-width:90vw; overflow:hidden; text-overflow:ellipsis; }
     .toast.show { opacity:1; transform:translate(-50%,0); }
     .banner { border-radius:14px; padding:10px 12px; margin-bottom:12px; font-size:12px; line-height:1.35; }
-    .banner.warn { background:color-mix(in srgb, var(--yellow) 17%, var(--surface-solid)); border:1px solid color-mix(in srgb, var(--yellow) 45%, var(--border)); }
     .banner.error { background:color-mix(in srgb, var(--red) 12%, var(--surface-solid)); border:1px solid color-mix(in srgb, var(--red) 40%, var(--border)); }
+    .privacy-note { margin-top:8px; color:var(--muted); font-size:11px; line-height:1.4; }
+    .status-readout { display:flex; align-items:center; gap:8px; min-height:44px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:var(--surface-2); font-size:13px; font-weight:700; }
     @media (min-width:700px) {
       .stats { grid-template-columns:repeat(4,minmax(0,1fr)); }
       .facade-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -286,7 +276,7 @@
 <body>
   <div id="loginView" class="login-wrap">
     <div class="login-card">
-      <div class="login-mark"><i class="fa-solid fa-building"></i></div>
+      <div class="login-mark"><img src="apple-touch-icon.png" alt="LAC QS"></div>
       <h1 class="login-title">LAC Fassaden-QS</h1>
       <p class="login-sub">Gemeinsamer Baufortschritt für Glasbau Pritz und getrennte QS-/Mängelverwaltung für SGS.</p>
 
@@ -300,27 +290,13 @@
       <button id="loginBtn" type="button" class="btn primary" style="width:100%;margin-top:10px">Anmelden</button>
       <div id="loginError" class="login-error" role="alert"></div>
 
-      <div class="setup-panel">
-        <details id="setupDetails">
-          <summary>Ersteinrichtung Supabase</summary>
-          <div class="setup-steps">
-            <p><strong>1.</strong> Den SQL-Block unten einmal im Supabase SQL Editor ausführen.</p>
-            <p><strong>2.</strong> Unter <em>Authentication → Users</em> zwei Benutzer anlegen und „Auto Confirm“ aktivieren:<br>
-              <span class="selectable">sgs-qs@lac-app.example</span> und <span class="selectable">pritz@lac-app.example</span>.<br>
-              Verwende dort die von dir festgelegten Passwörter. Die Passwörter stehen absichtlich <strong>nicht</strong> im öffentlichen HTML.</p>
-            <p><strong>3.</strong> Danach einmal als <strong>SGS-QS</strong> anmelden. Die Fassadenstruktur wird automatisch eingespielt.</p>
-          </div>
-          <textarea id="setupSql" class="textarea setup-copy" readonly></textarea>
-          <button id="copySqlBtn" type="button" class="btn ghost" style="width:100%;margin-top:8px">SQL kopieren</button>
-        </details>
-      </div>
     </div>
   </div>
 
   <div id="appView" class="app hidden">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-icon"><i class="fa-solid fa-building"></i></div>
+        <div class="brand-icon"><img src="apple-touch-icon.png" alt=""></div>
         <div style="min-width:0">
           <div class="brand-title">LAC Fassaden-QS</div>
           <div id="headerSub" class="brand-sub">Projekt 1710</div>
@@ -546,148 +522,6 @@
     const SEED_FIELDS = buildSeedFields();
     const FIELD_MAP = Object.fromEntries(SEED_FIELDS.map(f => [f.id,f]));
 
-    const SETUP_SQL = `-- LAC Fassaden-QS – einmalig im Supabase SQL Editor ausführen
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  display_name text not null,
-  role text not null check (role in ('qs','pritz')),
-  created_at timestamptz not null default now()
-);
-
-create table if not exists public.facades (
-  id text primary key,
-  finger text not null,
-  title text not null,
-  group_name text not null,
-  sort_order integer not null default 0
-);
-
-create table if not exists public.fields (
-  id text primary key,
-  facade_id text not null references public.facades(id) on delete cascade,
-  floor text not null,
-  floor_order integer not null,
-  col_no integer not null,
-  format_code text not null,
-  width_mm integer,
-  is_void boolean not null default false,
-  is_model boolean not null default false,
-  sort_order integer not null default 0
-);
-
-create table if not exists public.progress (
-  field_id text primary key references public.fields(id) on delete cascade,
-  completed boolean not null default false,
-  completed_at timestamptz,
-  completed_by uuid references auth.users(id),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.qs_records (
-  field_id text primary key references public.fields(id) on delete cascade,
-  status text not null default 'unchecked' check (status in ('unchecked','ok','note','defect','recheck')),
-  note text not null default '',
-  checked_at timestamptz,
-  checked_by uuid references auth.users(id),
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists public.defects (
-  id bigint generated by default as identity primary key,
-  field_id text not null references public.fields(id) on delete cascade,
-  status text not null default 'open' check (status in ('open','closed')),
-  description text not null,
-  created_at timestamptz not null default now(),
-  created_by uuid references auth.users(id),
-  closed_at timestamptz,
-  closed_by uuid references auth.users(id)
-);
-
-create or replace function public.current_role()
-returns text
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select role from public.profiles where id = auth.uid();
-$$;
-
-grant execute on function public.current_role() to authenticated;
-
-create or replace function public.handle_lac_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if lower(new.email) = 'sgs-qs@lac-app.example' then
-    insert into public.profiles(id, display_name, role)
-    values (new.id, 'SGS-QS', 'qs')
-    on conflict (id) do update set display_name=excluded.display_name, role=excluded.role;
-  elsif lower(new.email) = 'pritz@lac-app.example' then
-    insert into public.profiles(id, display_name, role)
-    values (new.id, 'Pritz', 'pritz')
-    on conflict (id) do update set display_name=excluded.display_name, role=excluded.role;
-  end if;
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created_lac on auth.users;
-create trigger on_auth_user_created_lac
-after insert or update of email on auth.users
-for each row execute procedure public.handle_lac_user();
-
--- Bereits vorhandene Benutzer nachziehen
-insert into public.profiles(id, display_name, role)
-select id, 'SGS-QS', 'qs' from auth.users where lower(email)='sgs-qs@lac-app.example'
-on conflict (id) do update set display_name='SGS-QS', role='qs';
-
-insert into public.profiles(id, display_name, role)
-select id, 'Pritz', 'pritz' from auth.users where lower(email)='pritz@lac-app.example'
-on conflict (id) do update set display_name='Pritz', role='pritz';
-
-alter table public.profiles enable row level security;
-alter table public.facades enable row level security;
-alter table public.fields enable row level security;
-alter table public.progress enable row level security;
-alter table public.qs_records enable row level security;
-alter table public.defects enable row level security;
-
-drop policy if exists "profiles_self_read" on public.profiles;
-create policy "profiles_self_read" on public.profiles for select to authenticated using (id = auth.uid());
-
-drop policy if exists "facades_read" on public.facades;
-create policy "facades_read" on public.facades for select to authenticated using (true);
-drop policy if exists "facades_qs_write" on public.facades;
-create policy "facades_qs_write" on public.facades for all to authenticated using (public.current_role()='qs') with check (public.current_role()='qs');
-
-drop policy if exists "fields_read" on public.fields;
-create policy "fields_read" on public.fields for select to authenticated using (true);
-drop policy if exists "fields_qs_write" on public.fields;
-create policy "fields_qs_write" on public.fields for all to authenticated using (public.current_role()='qs') with check (public.current_role()='qs');
-
-drop policy if exists "progress_read" on public.progress;
-create policy "progress_read" on public.progress for select to authenticated using (true);
-drop policy if exists "progress_insert" on public.progress;
-create policy "progress_insert" on public.progress for insert to authenticated with check (public.current_role() in ('qs','pritz'));
-drop policy if exists "progress_update" on public.progress;
-create policy "progress_update" on public.progress for update to authenticated using (public.current_role() in ('qs','pritz')) with check (public.current_role() in ('qs','pritz'));
-drop policy if exists "progress_delete_qs" on public.progress;
-create policy "progress_delete_qs" on public.progress for delete to authenticated using (public.current_role()='qs');
-
-drop policy if exists "qs_qs_read" on public.qs_records;
-create policy "qs_qs_read" on public.qs_records for select to authenticated using (public.current_role()='qs');
-drop policy if exists "qs_qs_write" on public.qs_records;
-create policy "qs_qs_write" on public.qs_records for all to authenticated using (public.current_role()='qs') with check (public.current_role()='qs');
-
-drop policy if exists "defects_qs_read" on public.defects;
-create policy "defects_qs_read" on public.defects for select to authenticated using (public.current_role()='qs');
-drop policy if exists "defects_qs_write" on public.defects;
-create policy "defects_qs_write" on public.defects for all to authenticated using (public.current_role()='qs') with check (public.current_role()='qs');`;
-
     const els = {
       loginView: document.getElementById('loginView'), appView: document.getElementById('appView'),
       password: document.getElementById('passwordInput'), loginBtn: document.getElementById('loginBtn'), loginError: document.getElementById('loginError'),
@@ -695,11 +529,8 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       pageOverview: document.getElementById('pageOverview'), pageFacades: document.getElementById('pageFacades'), pageDefects: document.getElementById('pageDefects'),
       bottomNav: document.getElementById('bottomNav'), defectsNavBtn: document.getElementById('defectsNavBtn'),
       networkLine: document.getElementById('networkLine'), globalBanner: document.getElementById('globalBanner'),
-      backdrop: document.getElementById('sheetBackdrop'), sheet: document.getElementById('fieldSheet'), toast: document.getElementById('toast'),
-      setupSql: document.getElementById('setupSql'), copySqlBtn: document.getElementById('copySqlBtn')
+      backdrop: document.getElementById('sheetBackdrop'), sheet: document.getElementById('fieldSheet'), toast: document.getElementById('toast')
     };
-    els.setupSql.value = SETUP_SQL;
-
     const state = {
       accountName: localStorage.getItem('lac.account') || 'SGS-QS',
       session: null,
@@ -793,11 +624,6 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
     els.loginBtn.addEventListener('click', login);
     els.password.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 
-    els.copySqlBtn.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(SETUP_SQL); toast('SQL kopiert'); }
-      catch { els.setupSql.focus(); els.setupSql.select(); toast('SQL markiert – bitte kopieren'); }
-    });
-
     async function loadProfile() {
       const { data, error } = await supabase.from('profiles').select('id,display_name,role').single();
       if (error) throw error;
@@ -840,7 +666,14 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
           state.qs = new Map((q.data || []).map(x => [x.field_id,x]));
           state.defects = d.data || [];
         } else {
-          state.qs = new Map(); state.defects = [];
+          const [q,d] = await Promise.all([
+            supabase.from('qs_pritz_view').select('field_id,status,checked_at,updated_at'),
+            supabase.from('defects').select('*').order('created_at',{ascending:false})
+          ]);
+          if (q.error) throw q.error;
+          if (d.error) throw d.error;
+          state.qs = new Map((q.data || []).map(x => [x.field_id,x]));
+          state.defects = d.data || [];
         }
         state.dbReady = true;
         setNetwork(true, 'Mit Supabase verbunden · ' + new Intl.DateTimeFormat('de-DE',{hour:'2-digit',minute:'2-digit'}).format(new Date()));
@@ -849,7 +682,7 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
         state.dbReady = false;
         setNetwork(false, 'Supabase nicht bereit');
         const msg = /relation|schema cache|does not exist/i.test(err.message || '')
-          ? 'Die Supabase-Tabellen sind noch nicht eingerichtet. Auf der Anmeldeseite findest du den einmaligen SQL-Block.'
+          ? 'Die Projektdatenbank ist noch nicht vollständig eingerichtet. Bitte den Administrator kontaktieren.'
           : `Daten konnten nicht geladen werden: ${esc(err.message || err)}`;
         els.globalBanner.innerHTML = `<div class="banner error">${msg}</div>`;
       } finally {
@@ -861,7 +694,7 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       try {
         await loadProfile();
       } catch (err) {
-        els.loginError.textContent = 'Supabase ist noch nicht vollständig eingerichtet. Bitte den SQL-Block unter „Ersteinrichtung Supabase“ ausführen.';
+        els.loginError.textContent = 'Die Projektdatenbank ist noch nicht vollständig eingerichtet. Bitte den Administrator kontaktieren.';
         await supabase.auth.signOut();
         return;
       }
@@ -869,19 +702,12 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       els.appView.classList.remove('hidden');
       els.roleBadge.textContent = state.profile.display_name;
       els.headerSub.textContent = isQS() ? 'QS · Projekt 1710' : 'Montagefortschritt · Projekt 1710';
-      if (!isQS()) {
-        els.defectsNavBtn.classList.add('hidden');
-        els.bottomNav.classList.add('two');
-        if (state.page === 'defects') state.page = 'overview';
-      } else {
-        els.defectsNavBtn.classList.remove('hidden');
-        els.bottomNav.classList.remove('two');
-      }
+      els.defectsNavBtn.classList.remove('hidden');
+      els.bottomNav.classList.remove('two');
       try {
         if (isQS()) await seedProjectIfQS();
         else {
-          const ready = await checkProjectReady();
-          if (!ready) els.globalBanner.innerHTML = '<div class="banner warn">Projektstruktur noch nicht eingespielt. Bitte SGS-QS einmal anmelden.</div>';
+          await checkProjectReady();
         }
       } catch (err) {
         state.dbReady = false;
@@ -920,7 +746,7 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       renderNav();
       renderOverview();
       renderFacades();
-      if (isQS()) renderDefects();
+      renderDefects();
     }
 
     function renderNav() {
@@ -930,7 +756,6 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       els.pageDefects.classList.toggle('hidden', state.page !== 'defects');
     }
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
-      if (btn.dataset.page === 'defects' && !isQS()) return;
       state.page = btn.dataset.page;
       localStorage.setItem('lac.page', state.page);
       renderNav();
@@ -941,9 +766,11 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       const fields = allTrackableFields();
       const done = fields.filter(f => fieldProgress(f.id).completed).length;
       const pct = fields.length ? Math.round(done/fields.length*100) : 0;
-      const checked = isQS() ? fields.filter(f => fieldQS(f.id).status !== 'unchecked').length : 0;
-      const openDef = isQS() ? state.defects.filter(d => d.status === 'open').length : 0;
+      const checked = fields.filter(f => fieldQS(f.id).status !== 'unchecked').length;
+      const openDef = state.defects.filter(d => d.status === 'open').length;
       const untestedDone = isQS() ? fields.filter(f => fieldProgress(f.id).completed && fieldQS(f.id).status === 'unchecked').length : 0;
+      const qsOk = fields.filter(f => fieldQS(f.id).status === 'ok').length;
+      const rechecks = fields.filter(f => fieldQS(f.id).status === 'recheck').length;
 
       const facadeCards = FACADE_DEFS.map(f => {
         const ff = facadeFields(f.id), fp = completionPct(ff);
@@ -961,7 +788,8 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
           <div class="card stat"><div class="stat-value">${pct}%</div><div class="stat-label">Pritz fertiggemeldet</div><div class="progress-track"><div class="progress-bar" style="width:${pct}%"></div></div></div>
           <div class="card stat"><div class="stat-value">${done}</div><div class="stat-label">fertige Felder von ${fields.length}</div></div>
           ${isQS()?`<div class="card stat"><div class="stat-value">${untestedDone}</div><div class="stat-label">fertig, aber noch nicht QS-geprüft</div></div>
-          <div class="card stat"><div class="stat-value">${openDef}</div><div class="stat-label">offene Mängel · ${checked} Felder geprüft</div></div>`:''}
+          <div class="card stat"><div class="stat-value">${openDef}</div><div class="stat-label">offene Mängel · ${checked} Felder geprüft</div></div>`:`<div class="card stat"><div class="stat-value">${qsOk}</div><div class="stat-label">QS i. O.</div></div>
+          <div class="card stat"><div class="stat-value">${openDef}</div><div class="stat-label">offene Mängel · ${rechecks} Nachprüfung</div></div>`}
         </div>
         ${isQS() && untestedDone>0 ? `<button type="button" class="btn primary" id="openUntestedBtn" style="width:100%;margin-bottom:5px"><i class="fa-solid fa-magnifying-glass"></i> ${untestedDone} fertige, ungeprüfte Felder anzeigen</button>` : ''}
         <div class="section-title">Fassadenflächen</div>
@@ -984,7 +812,9 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       const f = FACADE_MAP[state.facadeId] || FACADE_DEFS[0];
       const filters = isQS() ? [
         ['all','Alle'],['open','Nicht fertig'],['done','Fertig'],['done-unchecked','Fertig · ungeprüft'],['defects','Mit offenem Mangel']
-      ] : [['all','Alle'],['open','Nicht fertig'],['done','Fertig']];
+      ] : [
+        ['all','Alle'],['open','Nicht fertig'],['done','Fertig'],['qs-ok','QS i. O.'],['defects','Mangel'],['recheck','Nachprüfung']
+      ];
       const floorOptions = ['all',...f.rows.map(r=>r.floor)];
       const zoomPct = Math.round(state.zoom*100);
 
@@ -996,9 +826,8 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
           <div class="segmented" id="filterSegment">${filters.map(([v,l])=>`<button type="button" data-filter="${v}" class="${state.filter===v?'active':''}">${l}</button>`).join('')}</div>
           <div class="zoom-control"><button id="zoomOut" type="button" class="btn small">−</button><span class="zoom-value">${zoomPct}%</span><button id="zoomIn" type="button" class="btn small">+</button></div>
         </div>
-        <div class="legend">${legendHtml()}</div>
-        <div class="banner warn" style="padding:8px 10px;margin-bottom:10px"><strong>Orientierung:</strong> Türelemente sind gelb und zusätzlich durch eine durchgehende kräftige Linie gegenüber den Regelfeldern abgesetzt. Schmale Randfelder werden auch schmaler dargestellt.</div>
-        <div class="facade-shell"><div class="facade-scroll"><div id="facadeGrid" class="facade-grid"></div></div></div>`;
+        <div class="facade-shell"><div class="facade-scroll"><div id="facadeGrid" class="facade-grid"></div></div></div>
+        <div class="legend">${legendHtml()}</div>`;
 
       document.getElementById('facadeSelect').addEventListener('change', e => { state.facadeId=e.target.value; state.floorFilter='all'; localStorage.setItem('lac.facade',state.facadeId); renderFacades(); });
       document.getElementById('floorSelect').addEventListener('change', e => { state.floorFilter=e.target.value; localStorage.setItem('lac.floor',state.floorFilter); renderFacadeGrid(); });
@@ -1017,9 +846,17 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
 
     function legendHtml() {
       const codes = ['A','B','C','RA','RB','RC','RD','RE','T','M'];
-      return codes.map(c=>`<div class="legend-item"><span class="legend-swatch" style="background:${FORMAT[c].css}"></span><span>${FORMAT[c].short} · ${FORMAT[c].name}</span></div>`).join('') +
-        `<div class="legend-item"><span class="legend-swatch" style="border:3px solid var(--green);background:transparent"></span><span>fertig</span></div>` +
-        (isQS()?`<div class="legend-item"><span class="legend-swatch" style="background:var(--red);border-radius:50%"></span><span>offener Mangel</span></div>`:'');
+      const formats = codes.map(c=>{
+        const f=FORMAT[c];
+        const dim=f.width ? `${f.width} × 3368 mm` : 'Sonderformat';
+        return `<div class="legend-item"><span class="legend-swatch" style="background:${f.css}"></span><span><strong>${f.short}</strong> · ${f.name} · ${dim}</span></div>`;
+      }).join('');
+      const statuses = `<div class="legend-item"><span class="legend-swatch" style="border:3px solid var(--green);background:transparent"></span><span>fertig gemeldet</span></div>` +
+        `<div class="legend-item"><span class="legend-swatch" style="background:var(--green);border-radius:6px"></span><span>QS i. O.</span></div>` +
+        `<div class="legend-item"><span class="legend-swatch" style="background:var(--red);border-radius:6px"></span><span>Mangel</span></div>` +
+        `<div class="legend-item"><span class="legend-swatch" style="background:var(--blue);border-radius:6px"></span><span>Nachprüfung</span></div>` +
+        (isQS()?`<div class="legend-item"><span class="legend-swatch" style="background:var(--yellow);border-radius:6px"></span><span>Hinweis · intern</span></div>`:'');
+      return formats + statuses;
     }
 
     function fieldPassesFilter(field) {
@@ -1028,7 +865,9 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       if (state.filter === 'open') return !p.completed;
       if (state.filter === 'done') return !!p.completed;
       if (state.filter === 'done-unchecked') return p.completed && q.status === 'unchecked';
-      if (state.filter === 'defects') return defs.length > 0;
+      if (state.filter === 'defects') return defs.length > 0 || q.status === 'defect';
+      if (state.filter === 'qs-ok') return q.status === 'ok';
+      if (state.filter === 'recheck') return q.status === 'recheck';
       return true;
     }
 
@@ -1058,12 +897,12 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
           if(!isVoid) classes.push(p.completed?'completed':'not-completed');
           if(doorLeft) classes.push('door-zone-left'); if(doorRight) classes.push('door-zone-right');
           const opacity = pass ? 1 : .14;
-          const qsBadge = isQS() ? qsBadgeHtml(q.status) : '';
+          const qsBadge = qsBadgeHtml(q.status);
           html += `<button type="button" ${isVoid?'disabled':''} class="${classes.join(' ')}" data-field-id="${fieldId}" style="grid-row:${visibleRowIndex+1};grid-column:${colIndex+2};--cell-bg:${meta.css};opacity:${opacity}" aria-label="${esc(r.floor)} Feld ${colIndex+1} ${esc(meta.name)}">
-            ${!isVoid?`<div class="field-inner"><div class="field-code">${meta.short}</div><div class="field-dim">${isModel?'Modell':`${field.width_mm} × 3368`}</div><div class="field-label">${esc(meta.name)}</div></div>`:''}
+            ${!isVoid?`<div class="field-inner"><div class="field-code">${meta.short}</div><div class="field-label">${esc(meta.name)}</div></div>`:''}
             ${p.completed?'<span class="completion-badge"><i class="fa-solid fa-check"></i></span>':''}
             ${qsBadge}
-            ${isQS() && defs.length?'<span class="defect-marker"></span>':''}
+            ${defs.length?'<span class="defect-marker"></span>':''}
           </button>`;
         });
       });
@@ -1098,16 +937,20 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
 
       let roleContent='';
       if(!isQS()) {
+        const visibleStatus = q.status === 'ok' ? ['QS i. O.','qs-ok','fa-check'] : q.status === 'defect' ? ['Mangel','qs-defect','fa-triangle-exclamation'] : q.status === 'recheck' ? ['Nachprüfung','qs-recheck','fa-rotate'] : ['Noch nicht QS-geprüft','qs-unchecked','fa-minus'];
         roleContent=`<div class="form-group"><button id="toggleProgressBtn" type="button" class="btn ${progressClass}" style="width:100%">${p.completed?'<i class="fa-solid fa-rotate-left"></i>':'<i class="fa-solid fa-check"></i>'} ${progressAction}</button></div>
-        <div class="banner warn">Für Pritz gibt es bewusst nur <strong>fertig / nicht fertig</strong>. QS-Status, Notizen und Mängel sind im SGS-QS-Account getrennt.</div>`;
+          <div class="section-title">QS-Status</div>
+          <div class="status-readout"><span class="qs-badge ${visibleStatus[1]}" style="position:static;flex:0 0 auto"><i class="fa-solid ${visibleStatus[2]}"></i></span><span>${visibleStatus[0]}</span></div>
+          <div class="section-title">Gemeldete Mängel</div>
+          ${defs.length?defs.map(d=>defectSheetHtml(d,true)).join(''):'<div class="empty" style="padding:12px">Keine Mängel zu diesem Feld.</div>'}`;
       } else {
         const statusButtons=[['unchecked','Ungeprüft'],['ok','QS i. O.'],['note','Hinweis'],['defect','Mangel'],['recheck','Nachprüfung']];
         roleContent=`
-          <div class="form-group"><label class="form-label">QS-Status</label><div class="status-grid" id="qsStatusGrid">${statusButtons.map(([v,l])=>`<button type="button" data-status="${v}" class="status-btn ${q.status===v?'active':''}">${l}</button>`).join('')}</div></div>
-          <div class="form-group"><label class="form-label" for="qsNote">QS-Notiz</label><textarea id="qsNote" class="textarea" placeholder="Kurze Feststellung / Hinweis …">${esc(q.note||'')}</textarea></div>
+          <div class="form-group"><label class="form-label">QS-Status</label><div class="status-grid" id="qsStatusGrid">${statusButtons.map(([v,l])=>`<button type="button" data-status="${v}" class="status-btn ${q.status===v?'active':''}">${l}</button>`).join('')}</div><div id="hintPrivacy" class="privacy-note ${q.status==='note'?'':'hidden'}">Interner Hinweis: Dieser Status und die QS-Notiz sind ausschließlich für SGS-QS sichtbar. Pritz sieht diesen Hinweis nicht.</div></div>
+          <div class="form-group"><label class="form-label" for="qsNote">QS-Notiz</label><textarea id="qsNote" class="textarea" placeholder="Kurze QS-Feststellung …">${esc(q.note||'')}</textarea></div>
           <button id="saveQsBtn" type="button" class="btn primary" style="width:100%">QS-Eintrag speichern</button>
           <div class="section-title">Mängel zu diesem Feld</div>
-          ${defs.length?defs.map(defectSheetHtml).join(''):'<div class="empty" style="padding:12px">Noch kein Mangel angelegt.</div>'}
+          ${defs.length?defs.map(d=>defectSheetHtml(d,false)).join(''):'<div class="empty" style="padding:12px">Noch kein Mangel angelegt.</div>'}
           <div class="form-group"><label class="form-label" for="newDefectText">Neuen Mangel anlegen</label><textarea id="newDefectText" class="textarea" placeholder="Mangel beschreiben …"></textarea></div>
           <button id="addDefectBtn" type="button" class="btn red" style="width:100%">Mangel anlegen</button>`;
       }
@@ -1130,6 +973,8 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       } else {
         document.getElementById('qsStatusGrid').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
           document.getElementById('qsStatusGrid').querySelectorAll('button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+          const privacy=document.getElementById('hintPrivacy');
+          if(privacy) privacy.classList.toggle('hidden', b.dataset.status !== 'note');
         }));
         document.getElementById('saveQsBtn').addEventListener('click',()=>saveQS(field.id));
         document.getElementById('addDefectBtn').addEventListener('click',()=>addDefect(field.id));
@@ -1138,8 +983,9 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       }
     }
 
-    function defectSheetHtml(d) {
-      return `<div class="defect-card" style="margin-bottom:8px"><div class="defect-head"><div><div class="defect-id">M-${String(d.id).padStart(3,'0')}</div><div class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</div></div>${d.status==='open'?`<button type="button" class="btn small" data-close-defect="${d.id}">Schließen</button>`:`<button type="button" class="btn small ghost" data-reopen-defect="${d.id}">Wieder öffnen</button>`}</div><div class="defect-text">${esc(d.description)}</div><div class="defect-meta">angelegt ${fmtDate(d.created_at)}${d.closed_at?` · geschlossen ${fmtDate(d.closed_at)}`:''}</div></div>`;
+    function defectSheetHtml(d, readOnly=false) {
+      const action = readOnly ? '' : (d.status==='open'?`<button type="button" class="btn small" data-close-defect="${d.id}">Schließen</button>`:`<button type="button" class="btn small ghost" data-reopen-defect="${d.id}">Wieder öffnen</button>`);
+      return `<div class="defect-card" style="margin-bottom:8px"><div class="defect-head"><div><div class="defect-id">M-${String(d.id).padStart(3,'0')}</div><div class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</div></div>${action}</div><div class="defect-text">${esc(d.description)}</div><div class="defect-meta">angelegt ${fmtDate(d.created_at)}${d.closed_at?` · geschlossen ${fmtDate(d.closed_at)}`:''}</div></div>`;
     }
 
     async function setProgress(fieldId, completed) {
@@ -1192,9 +1038,9 @@ create policy "defects_qs_write" on public.defects for all to authenticated usin
       const open=state.defects.filter(d=>d.status==='open'), closed=state.defects.filter(d=>d.status==='closed');
       const makeCard=d=>{
         const f=FIELD_MAP[d.field_id]; const facade=f?FACADE_MAP[f.facade_id]:null;
-        return `<div class="defect-card"><div class="defect-head"><div><div class="defect-id">M-${String(d.id).padStart(3,'0')}</div><div class="defect-title">${facade?esc(facade.title):'Fassade'} · ${f?esc(f.floor):''} · Feld ${f?String(f.col_no).padStart(2,'0'):''}</div></div><span class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</span></div><div class="defect-text">${esc(d.description)}</div><div class="defect-meta">${fmtDate(d.created_at)}</div><div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn small primary" data-jump-field="${d.field_id}">Feld öffnen</button>${d.status==='open'?`<button type="button" class="btn small" data-close-list="${d.id}">Schließen</button>`:''}</div></div>`;
+        return `<div class="defect-card"><div class="defect-head"><div><div class="defect-id">M-${String(d.id).padStart(3,'0')}</div><div class="defect-title">${facade?esc(facade.title):'Fassade'} · ${f?esc(f.floor):''} · Feld ${f?String(f.col_no).padStart(2,'0'):''}</div></div><span class="pill ${d.status}">${d.status==='open'?'Offen':'Geschlossen'}</span></div><div class="defect-text">${esc(d.description)}</div><div class="defect-meta">${fmtDate(d.created_at)}</div><div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn small primary" data-jump-field="${d.field_id}">Feld öffnen</button>${isQS() && d.status==='open'?`<button type="button" class="btn small" data-close-list="${d.id}">Schließen</button>`:''}</div></div>`;
       };
-      els.pageDefects.innerHTML=`<h1 class="page-title">Mängel</h1><p class="page-sub">Nur im SGS-QS-Account sichtbar.</p><div class="stats"><div class="card stat"><div class="stat-value">${open.length}</div><div class="stat-label">offen</div></div><div class="card stat"><div class="stat-value">${closed.length}</div><div class="stat-label">geschlossen</div></div></div><div class="section-title">Offene Mängel</div><div class="defect-list">${open.length?open.map(makeCard).join(''):'<div class="card empty">Keine offenen Mängel.</div>'}</div>${closed.length?`<div class="section-title">Geschlossen</div><div class="defect-list">${closed.slice(0,30).map(makeCard).join('')}</div>`:''}`;
+      els.pageDefects.innerHTML=`<h1 class="page-title">Mängel</h1><p class="page-sub">${isQS()?'Mängelverwaltung SGS-QS':'Von SGS-QS gemeldete Mängel · nur lesend'}</p><div class="stats"><div class="card stat"><div class="stat-value">${open.length}</div><div class="stat-label">offen</div></div><div class="card stat"><div class="stat-value">${closed.length}</div><div class="stat-label">geschlossen</div></div></div><div class="section-title">Offene Mängel</div><div class="defect-list">${open.length?open.map(makeCard).join(''):'<div class="card empty">Keine offenen Mängel.</div>'}</div>${closed.length?`<div class="section-title">Geschlossen</div><div class="defect-list">${closed.slice(0,30).map(makeCard).join('')}</div>`:''}`;
       els.pageDefects.querySelectorAll('[data-jump-field]').forEach(b=>b.addEventListener('click',()=>{ const field=FIELD_MAP[b.dataset.jumpField]; if(field){state.facadeId=field.facade_id;state.page='facades';localStorage.setItem('lac.facade',state.facadeId);localStorage.setItem('lac.page','facades');renderAll();setTimeout(()=>openFieldSheet(field.id),50);} }));
       els.pageDefects.querySelectorAll('[data-close-list]').forEach(b=>b.addEventListener('click',()=>closeDefect(Number(b.dataset.closeList))));
     }
