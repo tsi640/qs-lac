@@ -339,6 +339,33 @@
     .guide-note { margin-top:12px; border-radius:14px; padding:10px 11px; font-size:12px; line-height:1.45; background:color-mix(in srgb, var(--yellow) 10%, var(--surface-solid)); border:1px solid color-mix(in srgb, var(--yellow) 38%, var(--border)); }
     .android-install-direct { width:100%; margin:0 0 12px; min-height:48px; border:0; border-radius:14px; background:var(--blue); color:white; font-weight:780; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
     body.modal-open { overflow:hidden; }
+    .report-modal { position:fixed; inset:0; z-index:145; opacity:0; pointer-events:none; transition:opacity .22s ease; }
+    .report-modal.open { opacity:1; pointer-events:auto; }
+    .report-modal-backdrop { position:absolute; inset:0; background:rgba(0,0,0,.38); }
+    .report-panel { position:absolute; left:10px; right:10px; top:calc(12px + var(--safe-top)); bottom:calc(12px + var(--safe-bottom)); max-width:720px; margin:auto; background:var(--surface-solid); border:1px solid var(--border); border-radius:24px; box-shadow:var(--shadow); overflow:auto; padding:14px 14px 18px; }
+    .report-topbar { display:flex; align-items:center; justify-content:space-between; gap:10px; position:sticky; top:0; z-index:2; background:linear-gradient(to bottom, var(--surface-solid) 82%, rgba(255,255,255,0)); padding-bottom:10px; }
+    .report-title-wrap { display:flex; align-items:center; gap:10px; min-width:0; }
+    .report-modal-icon { width:42px; height:42px; display:grid; place-items:center; border-radius:14px; background:color-mix(in srgb, var(--blue) 14%, var(--surface-solid)); color:var(--blue); font-size:19px; flex:0 0 42px; }
+    .report-title { margin:0; font-size:20px; font-weight:800; letter-spacing:-.03em; }
+    .report-subtitle { margin:2px 0 0; color:var(--muted); font-size:12px; line-height:1.35; }
+    .report-close { border:1px solid var(--border); background:var(--surface-2); width:38px; height:38px; border-radius:12px; display:grid; place-items:center; cursor:pointer; }
+    .report-block { border:1px solid var(--border); background:var(--surface); border-radius:18px; padding:13px; margin-top:10px; }
+    .report-block-title { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:780; margin:0 0 10px; }
+    .report-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .report-grid .wide { grid-column:1 / -1; }
+    .report-field label { display:block; font-size:11px; font-weight:720; margin:0 0 5px; color:var(--muted); }
+    .report-field input, .report-field select, .report-field textarea { width:100%; min-height:42px; border:1px solid var(--border); background:var(--surface-solid); color:var(--text); border-radius:11px; padding:9px 10px; font:inherit; font-size:13px; }
+    .report-field textarea { min-height:78px; resize:vertical; line-height:1.4; }
+    .report-checks { display:grid; gap:8px; }
+    .report-check { display:flex; align-items:flex-start; gap:9px; padding:9px 10px; border:1px solid var(--border); border-radius:12px; background:var(--surface-solid); cursor:pointer; }
+    .report-check input { width:18px; height:18px; margin:0; flex:0 0 18px; }
+    .report-check-copy { min-width:0; }
+    .report-check-copy strong { display:block; font-size:12px; line-height:1.25; }
+    .report-check-copy span { display:block; color:var(--muted); font-size:11px; line-height:1.35; margin-top:2px; }
+    .report-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:14px; }
+    .report-actions .btn { min-height:48px; }
+    .report-note { color:var(--muted); font-size:11px; line-height:1.45; margin-top:10px; }
+    @media (max-width:520px) { .report-grid { grid-template-columns:1fr; } .report-grid .wide { grid-column:auto; } .report-actions { grid-template-columns:1fr; } }
     .toast { position:fixed; z-index:120; left:50%; bottom:calc(88px + var(--safe-bottom)); transform:translate(-50%,20px); opacity:0; pointer-events:none; background:#111; color:#fff; border-radius:999px; padding:10px 14px; font-size:12px; font-weight:650; transition:.2s ease; white-space:nowrap; max-width:90vw; overflow:hidden; text-overflow:ellipsis; }
     .toast.show { opacity:1; transform:translate(-50%,0); }
     .banner { border-radius:14px; padding:10px 12px; margin-bottom:12px; font-size:12px; line-height:1.35; }
@@ -402,6 +429,7 @@
       </div>
       <div class="top-actions">
         <span id="roleBadge" class="role-badge"></span>
+        <button id="reportBtn" type="button" class="icon-btn hidden" aria-label="Bericht und Export" title="Bericht und Export"><i class="fa-solid fa-file-arrow-down"></i></button>
         <button id="refreshBtn" type="button" class="icon-btn" aria-label="Aktualisieren"><i class="fa-solid fa-rotate"></i></button>
         <button id="logoutBtn" type="button" class="icon-btn" aria-label="Abmelden"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
       </div>
@@ -520,6 +548,54 @@
     </section>
   </div>
 
+  <div id="reportModal" class="report-modal hidden" aria-hidden="true">
+    <div class="report-modal-backdrop" data-close-report></div>
+    <section class="report-panel" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+      <div class="report-topbar">
+        <div class="report-title-wrap">
+          <div class="report-modal-icon"><i class="fa-solid fa-file-pdf"></i></div>
+          <div>
+            <h2 id="reportTitle" class="report-title">QS-Bericht & Export</h2>
+            <p class="report-subtitle">PDF-Anlage zum QS-Memo oder vollständiger CSV-Datenexport</p>
+          </div>
+        </div>
+        <button id="closeReportBtn" type="button" class="report-close" aria-label="Bericht schließen"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="report-block">
+        <div class="report-block-title"><i class="fa-solid fa-pen-to-square"></i> Berichtsdaten</div>
+        <div class="report-grid">
+          <div class="report-field"><label for="reportMemoNo">QS-Memo / Anlage</label><input id="reportMemoNo" type="text" placeholder="z. B. QS-Memo 03"></div>
+          <div class="report-field"><label for="reportVisitDate">QS-Termin</label><input id="reportVisitDate" type="date"></div>
+          <div class="report-field"><label for="reportFrom">Berichtszeitraum von</label><input id="reportFrom" type="date"></div>
+          <div class="report-field"><label for="reportTo">Berichtszeitraum bis</label><input id="reportTo" type="date"></div>
+          <div class="report-field"><label for="reportScope">Bereich</label><select id="reportScope"><option value="all">Alle Fassaden</option><option value="current">Aktuell ausgewählte Fassade</option></select></div>
+          <div class="report-field"><label for="reportDigitalStart">Digitale Erfassung ab</label><input id="reportDigitalStart" type="date"></div>
+          <div class="report-field wide"><label for="reportBasisNote">Datenbasis / Übergangshinweis</label><textarea id="reportBasisNote" placeholder="Optional, z. B. frühere QS-Termine sind in den vorangegangenen QS-Memos dokumentiert."></textarea></div>
+          <div class="report-field wide"><label class="report-check" style="margin:0"><input id="reportBaselineStart" type="checkbox" checked><span class="report-check-copy"><strong>Datenstart als Erstbestand behandeln</strong><span>Einträge am Datum „Digitale Erfassung ab“ werden in der Änderungsstatistik nicht als neu fertig / neu geprüft gezählt. Sinnvoll beim Start der App in einem bereits laufenden Bauablauf.</span></span></label></div>
+        </div>
+      </div>
+
+      <div class="report-block">
+        <div class="report-block-title"><i class="fa-solid fa-list-check"></i> Inhalt der PDF-Anlage</div>
+        <div class="report-checks">
+          <label class="report-check"><input id="reportIncludeMatrices" type="checkbox" checked><span class="report-check-copy"><strong>Fassadenübersichten</strong><span>Grafische Feldmatrix mit Fertigstellung, QS-Status, Mängeln und Pritz-Meldungen.</span></span></label>
+          <label class="report-check"><input id="reportIncludeDefects" type="checkbox" checked><span class="report-check-copy"><strong>Mängelübersicht SGS</strong><span>Offene sowie im Berichtszeitraum erstellte oder geschlossene Mängel.</span></span></label>
+          <label class="report-check"><input id="reportIncludeProblems" type="checkbox" checked><span class="report-check-copy"><strong>Probleme / Hinweise von Pritz</strong><span>Getrennte Darstellung der von Pritz gemeldeten Sachverhalte.</span></span></label>
+          <label class="report-check"><input id="reportIncludeInternal" type="checkbox"><span class="report-check-copy"><strong>Interne SGS-Hinweise einschließen</strong><span>Standardmäßig aus. Nur für interne Berichtsversionen aktivieren.</span></span></label>
+        </div>
+        <div class="report-note">Der PDF-Bericht ist als strukturierte Anlage zum QS-Memo gedacht. Die App-Auswertung ergänzt das Memo; Feststellungen und fachliche Bewertung bleiben Bestandteil des eigentlichen QS-Memos.</div>
+      </div>
+
+      <div class="report-actions">
+        <button id="createPdfReportBtn" type="button" class="btn primary"><i class="fa-solid fa-file-pdf"></i> PDF-Anlage erstellen</button>
+        <button id="createCsvExportBtn" type="button" class="btn"><i class="fa-solid fa-file-csv"></i> CSV-Felddaten exportieren</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm';
 
@@ -726,14 +802,15 @@
     const els = {
       loginView: document.getElementById('loginView'), appView: document.getElementById('appView'),
       password: document.getElementById('passwordInput'), loginBtn: document.getElementById('loginBtn'), loginError: document.getElementById('loginError'),
-      roleBadge: document.getElementById('roleBadge'), headerSub: document.getElementById('headerSub'), refreshBtn: document.getElementById('refreshBtn'), logoutBtn: document.getElementById('logoutBtn'),
+      roleBadge: document.getElementById('roleBadge'), headerSub: document.getElementById('headerSub'), reportBtn: document.getElementById('reportBtn'), refreshBtn: document.getElementById('refreshBtn'), logoutBtn: document.getElementById('logoutBtn'),
       pageOverview: document.getElementById('pageOverview'), pageFacades: document.getElementById('pageFacades'), pageDefects: document.getElementById('pageDefects'),
       bottomNav: document.getElementById('bottomNav'), defectsNavBtn: document.getElementById('defectsNavBtn'),
       networkLine: document.getElementById('networkLine'), globalBanner: document.getElementById('globalBanner'),
       backdrop: document.getElementById('sheetBackdrop'), sheet: document.getElementById('fieldSheet'), toast: document.getElementById('toast'),
       installGuideEntry: document.getElementById('installGuideEntry'), openInstallGuideBtn: document.getElementById('openInstallGuideBtn'),
       installGuideModal: document.getElementById('installGuideModal'), closeInstallGuideBtn: document.getElementById('closeInstallGuideBtn'),
-      androidInstallBtn: document.getElementById('androidInstallBtn')
+      androidInstallBtn: document.getElementById('androidInstallBtn'),
+      reportModal: document.getElementById('reportModal'), closeReportBtn: document.getElementById('closeReportBtn'), createPdfReportBtn: document.getElementById('createPdfReportBtn'), createCsvExportBtn: document.getElementById('createCsvExportBtn')
     };
     const state = {
       accountName: localStorage.getItem('lac.account') || 'SGS-QS',
@@ -811,6 +888,75 @@
       els.installGuideEntry?.classList.add('hidden');
       closeInstallGuide();
     });
+
+    function isoDateLocal(date=new Date()) {
+      const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,'0'), d=String(date.getDate()).padStart(2,'0');
+      return `${y}-${m}-${d}`;
+    }
+    function reportDefaults() {
+      const today=new Date();
+      const from=new Date(today); from.setDate(from.getDate()-14);
+      return {
+        memo: localStorage.getItem('lac.report.memo') || '',
+        visit: isoDateLocal(today),
+        from: localStorage.getItem('lac.report.from') || isoDateLocal(from),
+        to: isoDateLocal(today),
+        digitalStart: localStorage.getItem('lac.report.digitalStart') || '',
+        basis: localStorage.getItem('lac.report.basis') || ''
+      };
+    }
+    function openReportModal() {
+      if(!isQS() || !els.reportModal) return;
+      const d=reportDefaults();
+      document.getElementById('reportMemoNo').value=d.memo;
+      document.getElementById('reportVisitDate').value=d.visit;
+      document.getElementById('reportFrom').value=d.from;
+      document.getElementById('reportTo').value=d.to;
+      document.getElementById('reportDigitalStart').value=d.digitalStart;
+      document.getElementById('reportBasisNote').value=d.basis;
+      document.getElementById('reportBaselineStart').checked=true;
+      document.getElementById('reportIncludeMatrices').checked=true;
+      document.getElementById('reportIncludeDefects').checked=true;
+      document.getElementById('reportIncludeProblems').checked=true;
+      document.getElementById('reportIncludeInternal').checked=false;
+      els.reportModal.classList.remove('hidden');
+      requestAnimationFrame(()=>els.reportModal.classList.add('open'));
+      els.reportModal.setAttribute('aria-hidden','false');
+      document.body.classList.add('modal-open');
+    }
+    function closeReportModal() {
+      if(!els.reportModal) return;
+      els.reportModal.classList.remove('open');
+      els.reportModal.setAttribute('aria-hidden','true');
+      document.body.classList.remove('modal-open');
+      setTimeout(()=>{ if(!els.reportModal.classList.contains('open')) els.reportModal.classList.add('hidden'); },220);
+    }
+    function getReportOptions() {
+      const opts={
+        memo: document.getElementById('reportMemoNo').value.trim(),
+        visit: document.getElementById('reportVisitDate').value || isoDateLocal(),
+        from: document.getElementById('reportFrom').value,
+        to: document.getElementById('reportTo').value || isoDateLocal(),
+        scope: document.getElementById('reportScope').value,
+        digitalStart: document.getElementById('reportDigitalStart').value,
+        basis: document.getElementById('reportBasisNote').value.trim(),
+        baselineStart: document.getElementById('reportBaselineStart').checked,
+        matrices: document.getElementById('reportIncludeMatrices').checked,
+        defects: document.getElementById('reportIncludeDefects').checked,
+        problems: document.getElementById('reportIncludeProblems').checked,
+        internal: document.getElementById('reportIncludeInternal').checked
+      };
+      if(opts.from && opts.to && opts.from>opts.to) throw new Error('Der Beginn des Berichtszeitraums liegt nach dem Ende.');
+      localStorage.setItem('lac.report.memo',opts.memo);
+      localStorage.setItem('lac.report.from',opts.from || '');
+      localStorage.setItem('lac.report.digitalStart',opts.digitalStart || '');
+      localStorage.setItem('lac.report.basis',opts.basis || '');
+      return opts;
+    }
+    els.reportBtn?.addEventListener('click',openReportModal);
+    els.closeReportBtn?.addEventListener('click',closeReportModal);
+    els.reportModal?.addEventListener('click',e=>{ if(e.target?.hasAttribute('data-close-report')) closeReportModal(); });
+    window.addEventListener('keydown',e=>{ if(e.key==='Escape' && els.reportModal && !els.reportModal.classList.contains('hidden')) closeReportModal(); });
 
     function toast(message) {
       els.toast.textContent = message;
@@ -968,6 +1114,7 @@
       els.loginView.classList.add('hidden');
       els.appView.classList.remove('hidden');
       els.roleBadge.textContent = state.profile.display_name;
+      els.reportBtn?.classList.toggle('hidden', !isQS());
       els.headerSub.textContent = isQS() ? 'QS · Projekt 1710' : 'Montagefortschritt · Projekt 1710';
       els.defectsNavBtn.classList.remove('hidden');
       els.bottomNav.classList.remove('two');
@@ -1492,6 +1639,264 @@
       if(error){toast(problem?'Meldung konnte nicht geöffnet werden':'Mangel konnte nicht geöffnet werden');return;}
       state.defects=state.defects.map(d=>d.id===id?data:d); toast(problem?'Pritz-Meldung wieder geöffnet':'Mangel wieder geöffnet'); renderAll(); if(state.selectedFieldId)renderFieldSheet();
     }
+
+    function pdfSafe(v='') {
+      return String(v ?? '')
+        .replace(/[–—]/g,'-').replace(/×/g,'x').replace(/•/g,'-')
+        .replace(/[“”]/g,'"').replace(/[‘’]/g,"'");
+    }
+    function reportFieldsFor(opts) {
+      return opts.scope==='current' ? facadeFields(state.facadeId) : allTrackableFields();
+    }
+    function reportFacadesFor(opts) {
+      return opts.scope==='current' ? [FACADE_MAP[state.facadeId] || FACADE_DEFS[0]] : FACADE_DEFS;
+    }
+    function isoInRange(value,from,to) {
+      if(!value) return false;
+      const t=new Date(value).getTime(); if(Number.isNaN(t)) return false;
+      const a=from ? new Date(`${from}T00:00:00`).getTime() : -Infinity;
+      const b=to ? new Date(`${to}T23:59:59.999`).getTime() : Infinity;
+      return t>=a && t<=b;
+    }
+    function isReportChange(value,opts) {
+      if(!isoInRange(value,opts.from,opts.to)) return false;
+      if(opts.baselineStart && opts.digitalStart) {
+        const day=isoDateLocal(new Date(value));
+        if(day===opts.digitalStart) return false;
+      }
+      return true;
+    }
+    function reportDate(v) {
+      if(!v) return '-';
+      const d=/^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(`${v}T12:00:00`) : new Date(v);
+      if(Number.isNaN(d.getTime())) return '-';
+      return new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
+    }
+    function reportStatusLabel(status) {
+      return ({unchecked:'ungeprüft',ok:'QS i. O.',note:'Hinweis intern',defect:'Mangel',recheck:'Nachprüfung'})[status] || status || 'ungeprüft';
+    }
+    function fieldLocationText(field) {
+      const facade=FACADE_MAP[field?.facade_id];
+      return field ? `${facade?.title || field.facade_id} | ${field.floor} | Feld ${String(field.col_no).padStart(2,'0')}` : '-';
+    }
+    function reportEntries(opts,problem) {
+      const ids=new Set(reportFieldsFor(opts).map(f=>f.id));
+      return state.defects.filter(d=>ids.has(d.field_id) && isPritzProblem(d)===problem && (
+        d.status==='open' || isoInRange(d.created_at,opts.from,opts.to) || isoInRange(d.closed_at,opts.from,opts.to)
+      ));
+    }
+    function reportFacadeStats(facade,opts) {
+      const fields=facadeFields(facade.id);
+      const ids=new Set(fields.map(f=>f.id));
+      const done=fields.filter(f=>fieldProgress(f.id).completed).length;
+      const qsOk=fields.filter(f=>fieldQS(f.id).status==='ok').length;
+      const recheck=fields.filter(f=>fieldQS(f.id).status==='recheck').length;
+      const openDef=state.defects.filter(d=>d.status==='open' && !isPritzProblem(d) && ids.has(d.field_id)).length;
+      const openProb=state.defects.filter(d=>d.status==='open' && isPritzProblem(d) && ids.has(d.field_id)).length;
+      const donePeriod=fields.filter(f=>{ const p=fieldProgress(f.id); return p.completed && isReportChange(p.completed_at || p.updated_at,opts); }).length;
+      const qsPeriod=fields.filter(f=>{ const q=fieldQS(f.id); return q.status!=='unchecked' && isReportChange(q.checked_at || q.updated_at,opts); }).length;
+      return {total:fields.length,done,qsOk,recheck,openDef,openProb,donePeriod,qsPeriod};
+    }
+    async function shareOrDownloadBlob(blob,filename,title) {
+      try {
+        const file=new File([blob],filename,{type:blob.type || 'application/octet-stream'});
+        if(navigator.share && navigator.canShare?.({files:[file]})) {
+          await navigator.share({title,files:[file]});
+          return;
+        }
+      } catch(err) {
+        if(err?.name==='AbortError') return;
+      }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+    }
+    function reportFileStem(opts) {
+      const memo=(opts.memo || 'QS-Anlage').replace(/[^a-zA-Z0-9äöüÄÖÜß_-]+/g,'_').replace(/^_+|_+$/g,'');
+      return `LAC_${memo || 'QS-Anlage'}_${opts.visit || isoDateLocal()}`;
+    }
+    function drawPdfTop(doc,title,subtitle='') {
+      const w=doc.internal.pageSize.getWidth();
+      doc.setFillColor(22,22,24); doc.rect(0,0,w,17,'F');
+      const logo=document.querySelector('.brand-icon img')?.src || document.querySelector('.login-mark img')?.src;
+      if(logo?.startsWith('data:image')) { try { doc.addImage(logo,'PNG',10,3,11,11); } catch {} }
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.text('LAC Fassaden-QS',25,8.2);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.text(pdfSafe(subtitle || 'Projekt 1710 | Doppelfassade'),25,12.4);
+      doc.setTextColor(22,22,24); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(pdfSafe(title),12,28);
+    }
+    function drawPdfFooters(doc,opts) {
+      const pages=doc.getNumberOfPages();
+      for(let i=1;i<=pages;i++) {
+        doc.setPage(i);
+        const w=doc.internal.pageSize.getWidth(), h=doc.internal.pageSize.getHeight();
+        doc.setDrawColor(215,215,220); doc.line(12,h-10,w-12,h-10);
+        doc.setTextColor(105,105,110); doc.setFont('helvetica','normal'); doc.setFontSize(6.8);
+        doc.text(pdfSafe(`${opts.memo || 'QS-Anlage'} | Datenstand ${reportDate(opts.to || opts.visit)}`),12,h-5.5);
+        doc.text(`Seite ${i} / ${pages}`,w-12,h-5.5,{align:'right'});
+      }
+    }
+    function pdfFormatColor(code) {
+      return ({A:[220,235,252],B:[220,242,225],C:[219,244,238],RA:[203,224,248],RB:[246,219,232],RC:[251,228,213],RD:[232,222,247],RE:[244,218,235],T:[250,238,181],M:[232,232,235]})[code] || [245,245,247];
+    }
+    function drawPdfTriangle(doc,x,y,size=1.7) {
+      doc.setFillColor(220,38,38);
+      doc.triangle(x,y+size,x+size,y-size,x+size*2,y+size,'F');
+      doc.setTextColor(255,255,255); doc.setFontSize(4); doc.setFont('helvetica','bold'); doc.text('!',x+size,y+.65,{align:'center'});
+    }
+    function drawFacadePdfPage(doc,facade,opts) {
+      doc.addPage('a4','landscape');
+      drawPdfTop(doc,facade.title,`${facade.group} | Fassadenstatus`);
+      const stats=reportFacadeStats(facade,opts);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(80,80,85);
+      doc.text(pdfSafe(`Felder: ${stats.total} | Pritz fertig: ${stats.done} | QS i. O.: ${stats.qsOk} | Nachprüfung: ${stats.recheck} | offene Mängel: ${stats.openDef} | Pritz-Meldungen: ${stats.openProb}`),12,35);
+
+      const left=25, right=286, top=43, rowH=Math.min(14,Math.max(9,(140/Math.max(1,facade.rows.length))));
+      const widths=facade.widths?.length ? facade.widths : facade.rows[0].codes.map(()=>1321);
+      const totalW=widths.reduce((sum,v)=>sum+(Number(v)||1321),0);
+      const gridW=right-left;
+      facade.rows.forEach((r,ri)=>{
+        const y=top+ri*rowH;
+        doc.setTextColor(45,45,48); doc.setFont('helvetica','bold'); doc.setFontSize(7.2); doc.text(pdfSafe(r.floor),left-3,y+rowH*.62,{align:'right'});
+        let x=left;
+        r.codes.forEach((code,ci)=>{
+          const width=gridW*((Number(widths[ci])||1321)/totalW);
+          const fieldId=`${facade.id}_${floorSlug(r.floor)}_C${String(ci+1).padStart(2,'0')}`;
+          const field=FIELD_MAP[fieldId];
+          if(code==='V' || field?.is_void) { x+=width; return; }
+          const p=fieldProgress(fieldId), q=fieldQS(fieldId);
+          const defs=openDefectsForField(fieldId), probs=openProblemsForField(fieldId);
+          let fill=pdfFormatColor(code), border=[190,190,195], lw=.25;
+          const fullyOk=p.completed && q.status==='ok' && !defs.length;
+          if(fullyOk) { fill=[218,247,226]; border=[22,163,74]; lw=.7; }
+          else if(q.status==='recheck') { border=[135,135,140]; lw=.65; }
+          else if(p.completed) { border=[34,139,94]; lw=.55; }
+          doc.setFillColor(...fill); doc.setDrawColor(...border); doc.setLineWidth(lw); doc.rect(x,y,width,rowH,'FD');
+          if(width>5.2) { doc.setTextColor(45,45,48); doc.setFont('helvetica','bold'); doc.setFontSize(width<8?4.4:5.5); doc.text(pdfSafe(code),x+width/2,y+rowH*.57,{align:'center'}); }
+          if(p.completed) {
+            const muted=q.status==='recheck'; doc.setDrawColor(muted?145:34,muted?145:139,muted?150:94); doc.setLineWidth(.65);
+            const cx=x+1.3, cy=y+1.8; doc.line(cx,cy,cx+.9,cy+.9); doc.line(cx+.9,cy+.9,cx+2.2,cy-.7);
+          }
+          if(q.status==='ok') { doc.setFillColor(22,163,74); doc.circle(x+width-1.5,y+1.6,.75,'F'); }
+          if(q.status==='recheck') { doc.setFillColor(145,145,150); doc.circle(x+width-1.5,y+1.6,.75,'F'); }
+          if(defs.length) { doc.setFillColor(220,38,38); doc.circle(x+width-1.4,y+rowH-1.4,.85,'F'); }
+          if(probs.length) drawPdfTriangle(doc,x+.5,y+rowH-1.3,1.1);
+          if(opts.internal && q.status==='note') { doc.setFillColor(202,138,4); doc.rect(x+width-2.3,y+rowH-2.3,1.3,1.3,'F'); }
+          x+=width;
+        });
+      });
+      const legendY=Math.min(178,top+facade.rows.length*rowH+8);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.2); doc.setTextColor(40,40,43); doc.text('Statuslegende',12,legendY);
+      const legend=[
+        ['Pritz fertig',[34,139,94],'check'],['QS i. O.',[22,163,74],'dot'],['Nachprüfung',[145,145,150],'dot'],['Mangel SGS',[220,38,38],'dot'],['Pritz-Problem',[220,38,38],'triangle']
+      ];
+      let lx=46;
+      legend.forEach(([label,color,type])=>{
+        if(type==='dot'){doc.setFillColor(...color);doc.circle(lx,legendY-.6,1.2,'F');}
+        else if(type==='triangle'){drawPdfTriangle(doc,lx-1.1,legendY-.6,1.05);}
+        else {doc.setDrawColor(...color);doc.setLineWidth(.7);doc.line(lx-1.5,legendY-.4,lx-.5,legendY+.6);doc.line(lx-.5,legendY+.6,lx+1.2,legendY-1);}
+        doc.setTextColor(75,75,80);doc.setFont('helvetica','normal');doc.setFontSize(6.8);doc.text(pdfSafe(label),lx+3,legendY); lx+=35;
+      });
+      doc.setTextColor(105,105,110); doc.setFontSize(6.5); doc.text('Die Farbfläche im Feld kennzeichnet das Glasformat; die Statussymbole liegen darüber.',12,legendY+6);
+    }
+    async function createPdfReport() {
+      if(!isQS()) return;
+      let opts; try { opts=getReportOptions(); } catch(err) { toast(err.message); return; }
+      const JsPdfCtor=window.jspdf?.jsPDF;
+      if(!JsPdfCtor) { toast('PDF-Modul konnte nicht geladen werden'); return; }
+      els.createPdfReportBtn.disabled=true;
+      els.createPdfReportBtn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> PDF wird erstellt …';
+      try {
+        const doc=new JsPdfCtor({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+        doc.setProperties({title:pdfSafe(`${opts.memo || 'QS-Anlage'} - LAC Fassaden-QS`),subject:'QS-Anlage LAC Doppelfassade',author:'SGS-QS',creator:'LAC Fassaden-QS'});
+        drawPdfTop(doc,opts.memo ? `${opts.memo} - Anlage Fassaden-QS` : 'QS-Anlage Fassadenstatus','Projekt 1710 | LAC Doppelfassade');
+        const fields=reportFieldsFor(opts), facades=reportFacadesFor(opts);
+        const done=fields.filter(f=>fieldProgress(f.id).completed).length;
+        const qsOk=fields.filter(f=>fieldQS(f.id).status==='ok').length;
+        const recheck=fields.filter(f=>fieldQS(f.id).status==='recheck').length;
+        const defects=reportEntries(opts,false), problems=reportEntries(opts,true);
+        const openDef=defects.filter(d=>d.status==='open').length, openProb=problems.filter(d=>d.status==='open').length;
+        const donePeriod=fields.filter(f=>{const p=fieldProgress(f.id);return p.completed&&isReportChange(p.completed_at||p.updated_at,opts)}).length;
+        const qsPeriod=fields.filter(f=>{const q=fieldQS(f.id);return q.status!=='unchecked'&&isReportChange(q.checked_at||q.updated_at,opts)}).length;
+
+        doc.setTextColor(70,70,75);doc.setFont('helvetica','normal');doc.setFontSize(8.5);
+        const meta=[
+          `QS-Termin: ${reportDate(opts.visit)}`,
+          `Berichtszeitraum: ${opts.from?reportDate(opts.from):'offen'} bis ${reportDate(opts.to)}`,
+          `Bereich: ${opts.scope==='current'?(FACADE_MAP[state.facadeId]?.title||state.facadeId):'alle hinterlegten Fassaden'}`,
+          opts.digitalStart?`Digitale Erfassung in der App ab: ${reportDate(opts.digitalStart)}`:'',
+          opts.digitalStart && opts.baselineStart?'Erstbestand am Datenstart wird nicht als Veränderung im Berichtszeitraum gezählt.':''
+        ].filter(Boolean);
+        meta.forEach((line,i)=>doc.text(pdfSafe(line),12,36+i*5));
+        let y=36+meta.length*5+5;
+        if(opts.basis) {
+          const lines=doc.splitTextToSize(pdfSafe(opts.basis),198);
+          const boxH=Math.max(16,9+lines.length*3.5);
+          doc.setFillColor(245,245,247);doc.setDrawColor(220,220,224);doc.roundedRect(12,y,273,boxH,2,2,'FD');
+          doc.setTextColor(55,55,58);doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text('Datenbasis / Übergangshinweis',16,y+5);
+          doc.setFont('helvetica','normal');doc.text(lines,16,y+9.5);
+          y+=boxH+5;
+        }
+        const cardW=42.3,gap=4,startX=12;
+        const cards=[['Felder',fields.length,'Gesamt'],['Pritz fertig',done,`${fields.length?Math.round(done/fields.length*100):0}%`],['QS i. O.',qsOk,`${fields.length?Math.round(qsOk/fields.length*100):0}%`],['Nachprüfung',recheck,'aktuell'],['Mängel offen',openDef,'SGS'],['Pritz-Meld.',openProb,'offen']];
+        cards.forEach((c,i)=>{const x=startX+i*(cardW+gap);doc.setFillColor(248,248,250);doc.setDrawColor(220,220,224);doc.roundedRect(x,y,cardW,22,2.2,2.2,'FD');doc.setTextColor(25,25,28);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text(String(c[1]),x+4,y+8);doc.setFontSize(7);doc.text(pdfSafe(c[0]),x+4,y+14);doc.setFont('helvetica','normal');doc.setTextColor(105,105,110);doc.setFontSize(6.5);doc.text(pdfSafe(c[2]),x+4,y+18.5);});
+        y+=29;
+        doc.setTextColor(25,25,28);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('Veränderungen im Berichtszeitraum',12,y);
+        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(70,70,75);doc.text(pdfSafe(`${donePeriod} Felder aktuell fertig und im Zeitraum fertiggemeldet | ${qsPeriod} Felder mit aktuellem QS-Status und Prüfung/Änderung im Zeitraum`),12,y+5);
+        y+=10;
+        const rows=facades.map(f=>{const st=reportFacadeStats(f,opts);return [pdfSafe(f.title),st.total,st.done,st.donePeriod,st.qsOk,st.qsPeriod,st.recheck,st.openDef,st.openProb];});
+        doc.autoTable({startY:y,margin:{left:12,right:12,bottom:16},head:[['Fassade','Felder','Fertig','Fertig im Zeitraum','QS i.O.','QS im Zeitraum','Nachpr.','Mängel','Pritz']],body:rows,theme:'grid',styles:{font:'helvetica',fontSize:6.8,cellPadding:1.8,textColor:[45,45,48],lineColor:[220,220,224],lineWidth:.15},headStyles:{fillColor:[35,35,38],textColor:[255,255,255],fontStyle:'bold'},columnStyles:{0:{cellWidth:61}}});
+        const finalY=doc.lastAutoTable?.finalY || y+30;
+        doc.setTextColor(105,105,110);doc.setFont('helvetica','normal');doc.setFontSize(6.8);
+        if(finalY<191) doc.text('Hinweis: Die Auswertung bildet den in der App dokumentierten Datenstand ab und ist als Anlage zum QS-Memo vorgesehen.',12,finalY+7);
+
+        if(opts.matrices) facades.forEach(f=>drawFacadePdfPage(doc,f,opts));
+
+        const addEntryTable=(title,entries,problem)=>{
+          doc.addPage('a4','landscape');
+          drawPdfTop(doc,title,problem?'Meldungen der Montagefirma Pritz':'Mangelübersicht SGS-QS');
+          if(!entries.length) { doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(80,80,85);doc.text('Keine relevanten Einträge für den ausgewählten Bereich / Zeitraum.',12,38);return; }
+          const rows=entries.map(d=>{const f=FIELD_MAP[d.field_id];const fac=f?FACADE_MAP[f.facade_id]:null;return [problem?`P-${String(d.id).padStart(3,'0')}`:`M-${String(d.id).padStart(3,'0')}`,pdfSafe(fac?.title||''),pdfSafe(f?`${f.floor} / Feld ${String(f.col_no).padStart(2,'0')}`:''),pdfSafe(entryDescription(d)),d.status==='open'?'offen':'geschlossen',reportDate(d.created_at),d.closed_at?reportDate(d.closed_at):'-'];});
+          doc.autoTable({startY:35,margin:{left:12,right:12,top:27,bottom:16},head:[['Nr.','Fassade','Position',problem?'Meldung':'Feststellung','Status','Erfasst','Erledigt']],body:rows,theme:'grid',styles:{font:'helvetica',fontSize:6.7,cellPadding:2,textColor:[45,45,48],lineColor:[220,220,224],lineWidth:.15,valign:'top'},headStyles:{fillColor:problem?[112,55,55]:[135,28,28],textColor:[255,255,255],fontStyle:'bold'},columnStyles:{0:{cellWidth:14},1:{cellWidth:44},2:{cellWidth:34},3:{cellWidth:105},4:{cellWidth:22},5:{cellWidth:23},6:{cellWidth:23}},didDrawPage:()=>{doc.setFillColor(22,22,24);doc.rect(0,0,doc.internal.pageSize.getWidth(),17,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.text('LAC Fassaden-QS',12,8);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text(pdfSafe(title),12,12.2);}});
+        };
+        if(opts.defects) addEntryTable('Mängelübersicht',reportEntries(opts,false),false);
+        if(opts.problems) addEntryTable('Probleme / Hinweise von Pritz',reportEntries(opts,true),true);
+
+        if(opts.internal) {
+          const noteFields=fields.filter(f=>String(fieldQS(f.id).note||'').trim());
+          doc.addPage('a4','landscape'); drawPdfTop(doc,'Interne SGS-Hinweise','Nicht zur Weitergabe an Pritz');
+          if(noteFields.length) {
+            const rows=noteFields.map(f=>{const q=fieldQS(f.id);return [pdfSafe(fieldLocationText(f)),pdfSafe(reportStatusLabel(q.status)),pdfSafe(q.note||''),reportDate(q.updated_at||q.checked_at)];});
+            doc.autoTable({startY:35,margin:{left:12,right:12,bottom:16},head:[['Bereich / Feld','QS-Status','Interner Hinweis','Stand']],body:rows,theme:'grid',styles:{font:'helvetica',fontSize:6.8,cellPadding:2,lineColor:[220,220,224],lineWidth:.15,valign:'top'},headStyles:{fillColor:[90,75,25],textColor:[255,255,255]},columnStyles:{0:{cellWidth:78},1:{cellWidth:30},2:{cellWidth:130},3:{cellWidth:27}}});
+          } else { doc.setFontSize(9);doc.setTextColor(80,80,85);doc.text('Keine internen SGS-Hinweise hinterlegt.',12,38); }
+        }
+        drawPdfFooters(doc,opts);
+        const blob=doc.output('blob');
+        await shareOrDownloadBlob(blob,`${reportFileStem(opts)}.pdf`,opts.memo || 'LAC QS-Anlage');
+        toast('PDF-Anlage erstellt');
+      } catch(err) {
+        console.error(err); toast(`PDF konnte nicht erstellt werden: ${err.message || err}`);
+      } finally {
+        els.createPdfReportBtn.disabled=false;
+        els.createPdfReportBtn.innerHTML='<i class="fa-solid fa-file-pdf"></i> PDF-Anlage erstellen';
+      }
+    }
+    async function createCsvExport() {
+      if(!isQS()) return;
+      let opts; try { opts=getReportOptions(); } catch(err) { toast(err.message); return; }
+      const fields=reportFieldsFor(opts);
+      const headers=['Feld-ID','Finger','Fassade','Geschoss','Feld','Format','Breite mm','Pritz Status','Fertig am','QS Status','QS geprüft/geändert am','QS-Notiz intern','Offene Mängel','Mangeltexte','Offene Pritz-Probleme','Pritz-Meldungen'];
+      const rows=fields.map(f=>{
+        const facade=FACADE_MAP[f.facade_id],p=fieldProgress(f.id),q=fieldQS(f.id),defs=openDefectsForField(f.id),probs=openProblemsForField(f.id);
+        return [f.id,facade?.finger||'',facade?.title||f.facade_id,f.floor,f.col_no,f.format_code,f.width_mm||'',p.completed?'Fertig':'Nicht fertig',p.completed_at||p.updated_at||'',reportStatusLabel(q.status),q.checked_at||q.updated_at||'',opts.internal?(q.note||''):'',defs.length,defs.map(entryDescription).join(' | '),probs.length,probs.map(entryDescription).join(' | ')];
+      });
+      const quote=v=>`"${String(v??'').replaceAll('"','""')}"`;
+      const csv='\ufeff'+[headers,...rows].map(r=>r.map(quote).join(';')).join('\r\n');
+      await shareOrDownloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`${reportFileStem(opts)}_Felddaten.csv`,'LAC QS-Felddaten');
+      toast('CSV exportiert');
+    }
+    els.createPdfReportBtn?.addEventListener('click',createPdfReport);
+    els.createCsvExportBtn?.addEventListener('click',createCsvExport);
 
     function renderDefects() {
       const defects=state.defects.filter(d=>!isPritzProblem(d));
